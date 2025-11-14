@@ -24,7 +24,7 @@ export const ParticipantView = ({
 
 
 
-  if (!ready) return 'Loading connection...'  
+  // if (!ready) return 'Loading connection...'  
   
   return (
     <>

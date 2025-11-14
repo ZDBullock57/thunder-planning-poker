@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Peer } from 'peerjs'
 import { RevealButton } from "./RevealButton";
 import { UserCard } from "./UserCard";
+import { AllCards } from "./Card";
 
 const FAKE_USERS = ["Seif", "Duncan", "Zach"]
 
@@ -9,6 +10,7 @@ export const HostView = ({ peer }: { peer: Peer }) => {
     const [sessionName, setSessionName] = useState('')
     const [sessionStarted, setSessionStarted] = useState(false)
     const [userPoint, setUserPoints] = useState<Record<string, null | string>>({})
+    const [revealed, setRevealed] = useState(false)
 
     useEffect(() => {
         peer.on('connection', () => console.log("peer connected!"))
@@ -39,7 +41,7 @@ export const HostView = ({ peer }: { peer: Peer }) => {
         </div>
         
     </>) : (<>
-        <p>{peer.id}</p>
+        {/* <p>{peer.id}</p> */}
         <button className="create-button" onClick={() => {
             const url = new URL(window.location.origin + '?join_id=' + peer.id)
             navigator.clipboard.writeText(url.href)
@@ -50,16 +52,15 @@ export const HostView = ({ peer }: { peer: Peer }) => {
                 })
         }}>Copy to clipboard</button>
         
-        <RevealButton />
-        
+        <RevealButton onReveal={() => setRevealed(true)} />
 
         {/* List users */}
         {FAKE_USERS.map( user => {
             return (
-                <UserCard userName={user} />
+                <UserCard userName={!revealed ? user : [1, 2, 4][Math.floor((Math.random() * 3))]} />
             )
         })}
         
-        <button className="create-button" onClick={() => alert("start new round!")}>Start new pointing round - we found the lamb sauce</button> 
+        <button className="create-button" onClick={() => setRevealed(false)}>Start new pointing round - we found the lamb sauce</button> 
     </>)
 }
