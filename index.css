@@ -1,0 +1,72 @@
+/* style for username button */
+.create-button {
+    background-color: #040070;
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+    margin-left: 12px;
+}
+
+.create-button:disabled { 
+    background-color: #4b4970;
+}
+
+body {
+    background-color: #aaf2f1
+}
+
+h1 {
+    color: #040070;    
+}
+
+.title {
+    font-size: 64px;
+    font-style: bold;
+}
+
+
+.input-field {
+    border: 2px solid #040070;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 16px;
+}
+
+
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 10px solid #aaf2f1;
+    border-radius: 10px;
+    background-color: #040070;
+    color: #aaf2f1;
+    width: 90px;
+    height: 100px;
+    font-size: 64px; 
+    text-align: center;
+}
+
+.card-border {
+    background-color: #040070;
+    width: 150px;
+    height: 150px;
+    margin: 20px;
+    border-radius: 10px; 
+}
+
+.create-session {
+    justify-self: center;
+    padding: 32px;
+    border: 10px solid #040070;
+    border-radius: 20px;
+    color: #aaf2f1;
+    max-width: fit-content;
+}

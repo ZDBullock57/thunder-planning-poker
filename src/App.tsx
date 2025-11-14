@@ -1,35 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { DEFAULT_POKER_VALUES } from "./utils/utils";
+import { useState } from "react";
+import { CreateSession } from "./components/CreateSession"
+import { HostView } from "./components/HostView";
+import { ParticipantView } from "./components/ParticipantView";
+import "../index.css"
 
-function App() {
-  const [count, setCount] = useState(0)
+// Views:
+// - Default (no session, probably going to become a host)
+// - Host
+// - Joined
 
+type View = "default" | "host" | "participant";
+
+export const App = () => {
+  const search = new URLSearchParams(window.location.search)
+  const joinId = search.get('join_id')
+  const [view, setView] = useState<View>(joinId ? "participant" : "host");
+  const componentMap = {
+    default: CreateSession,
+    host: HostView,
+    participant: ParticipantView,
+  }
+  
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1 className="title">Where’s the Lamb Sauce?</h1>
+      {DEFAULT_POKER_VALUES}
+      { view === 'participant' && <ParticipantView /> }
+      { view === 'host' && <HostView /> }
     </>
-  )
-}
-
-export default App
+  );
+};
