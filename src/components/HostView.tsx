@@ -1,66 +1,102 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
 import { Peer } from 'peerjs'
-import { RevealButton } from "./RevealButton";
-import { UserCard } from "./UserCard";
-import { AllCards } from "./Card";
+import { RevealButton } from './RevealButton'
+import { UserCard } from './UserCard'
 
-const FAKE_USERS = ["Seif", "Duncan", "Zach"]
+type UserData = {
+  name?: string
+  vote?: string
+}
+
+// TODO: Vote context - A description or link to what is being voted on.
+//       Host can update this whenever
 
 export const HostView = ({ peer }: { peer: Peer }) => {
-    const [sessionName, setSessionName] = useState('')
-    const [sessionStarted, setSessionStarted] = useState(false)
-    const [userPoint, setUserPoints] = useState<Record<string, null | string>>({})
-    const [revealed, setRevealed] = useState(false)
+  const [sessionName, setSessionName] = useState('')
+  const [peerDataMap, setPeerDataMap] = useState<Record<string, UserData>>({})
+  const [revealed, setRevealed] = useState(false)
 
-    useEffect(() => {
-        peer.on('connection', () => console.log("peer connected!"))
-        peer.on('data', (data) => {
-            console.log("Data:", data)
-            if (data?.name) {
-                setUserPoints(current => ({...current, [data.name]: null}))
-            }
-        })
-    }, [peer])
-    
+  useEffect(() => {
+    peer.on('connection', (connection) => {
+      console.log('user connected')
+      connection.on('close', () => {
+        // TODO: Delete user? This would happen if the user leaves
+      })
+      connection.on('data', (data: any) => {
+        console.log('Received user data', data)
+        setPeerDataMap((current) => ({
+          ...current,
+          [connection.peer]: { ...current[connection.peer], ...data },
+        }))
+        // TODO: Update all other users with names, but not votes
+      })
+    })
+  }, [peer])
 
-    return !sessionStarted ? (<>
-        <div className="create-session">
-            <h1>Enter a name for your session:</h1>
-            <input 
-                value={sessionName}
-                className="input-field"
-                onChange={(e) => setSessionName(e.target.value)}
-                style={{width: 'fill'}}
+  return !sessionName ? (
+    <>
+      <form
+        className="create-session"
+        action={(formData) => {
+          const sessionName = formData.get('sessionName') as string
+          if (!sessionName.trim()) return
+          setSessionName(sessionName)
+        }}
+      >
+        <label className="text-field">
+          Enter a name for your session:
+          <input
+            name="sessionName"
+            className="input-field"
+            style={{ width: 'fill' }}
+          />
+        </label>
+
+        <button type="submit" className="create-button">
+          Create
+        </button>
+      </form>
+    </>
+  ) : (
+    <>
+      <button
+        className="create-button"
+        onClick={() => {
+          const url = new URL(window.location.origin + '?join_id=' + peer.id)
+          navigator.clipboard
+            .writeText(url.href)
+            .then(() => alert('Link copied to clipboard!'))
+            .catch((err) => {
+              console.error('Failed to copy to clipboard', err)
+              alert('Failed to copy to clipboard')
+            })
+        }}
+      >
+        Copy to clipboard
+      </button>
+
+      <RevealButton
+        onReveal={() => {
+          setRevealed(true)
+          // TODO: Send votes to users
+        }}
+      />
+
+      {/* List users */}
+      {Object.values(peerDataMap)
+        .filter((user) => user.name)
+        .map((user) => {
+          return (
+            <UserCard
+              key={user.name}
+              userName={!revealed ? user.name! : user.vote!}
             />
-            <button 
-                children='Create'
-                className='create-button'
-                disabled={!sessionName}
-                onClick={() => setSessionStarted(true)}
-            />
-        </div>
-        
-    </>) : (<>
-        {/* <p>{peer.id}</p> */}
-        <button className="create-button" onClick={() => {
-            const url = new URL(window.location.origin + '?join_id=' + peer.id)
-            navigator.clipboard.writeText(url.href)
-                .then(() => alert("Link copied to clipboard!"))
-                .catch((err) => {
-                    console.error("Failed to copy to clipboard", err)
-                    alert('Failed to copy to clipboard')
-                })
-        }}>Copy to clipboard</button>
-        
-        <RevealButton onReveal={() => setRevealed(true)} />
-
-        {/* List users */}
-        {FAKE_USERS.map( user => {
-            return (
-                <UserCard userName={!revealed ? user : [1, 2, 4][Math.floor((Math.random() * 3))]} />
-            )
+          )
         })}
-        
-        <button className="create-button" onClick={() => setRevealed(false)}>Start new pointing round - we found the lamb sauce</button> 
-    </>)
+
+      <button className="create-button" onClick={() => setRevealed(false)}>
+        Start new pointing round - we found the lamb sauce
+      </button>
+    </>
+  )
 }

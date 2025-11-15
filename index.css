@@ -1,3 +1,9 @@
+.text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 /* style for username button */
 .create-button {
     background-color: #040070;
@@ -67,7 +73,6 @@ h1 {
     padding: 32px;
     border: 10px solid #040070;
     border-radius: 20px;
-    color: #aaf2f1;
     max-width: fit-content;
 }
 
