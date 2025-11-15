@@ -1,67 +1,81 @@
-import { useState, useEffect } from "react";
-import { AllCards, Card } from "./Card";
-import { type DataConnection } from "peerjs";
+import { useState, useEffect } from 'react'
+import { AllCards, Card } from './Card'
+import { type DataConnection, Peer } from 'peerjs'
 
 export const ParticipantView = ({
-  connection,
+  peer,
+  joinId,
 }: {
-  connection: DataConnection;
+  peer: Peer
+  joinId: string
 }) => {
-  const [name, setName] = useState("");
-  const [confirmedName, setConfirmedName] = useState(false);
-  const [card, setCard] = useState("");
+  const [name, setName] = useState('')
+  const [card, setCard] = useState('')
   const chooseCard = (value: string) => {
-    setCard(value);
-  };
+    setCard(value)
+    connection?.send({ vote: value })
+  }
 
-  const [ready, setReady] = useState(false)
+  const [connection, setConnection] = useState<DataConnection>()
   useEffect(() => {
+    const connection = peer.connect(joinId)
+    console.log('connected to host')
     connection.on('open', () => {
-      setReady(true)
+      console.log('host connection open')
+      setConnection(connection)
+
+      connection.on('data', (data) => {
+        console.log('Received data from host', data)
+        // TODO: Accept host data and update local state
+      })
     })
-  }, [connection])
+  }, [peer, joinId])
 
+  if (!connection) return 'Connecting to host...'
 
-
-
-  // if (!ready) return 'Loading connection...'  
-  
   return (
     <>
-      {confirmedName ? (
+      {!!name ? (
         <>
           <h1>{`Welcome, ${name}`}</h1>
           {card ? <Card value={card} /> : <AllCards chooseCard={chooseCard} />}
-          <button className="create-button" onClick={() => setCard("")}>
+          <button
+            className="create-button"
+            onClick={() => {
+              setCard('')
+              connection.send({ vote: null })
+            }}
+          >
             Clear choice
           </button>
         </>
       ) : (
-        <>
-          <h1>Enter your name:</h1>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="input-field"
-            onChange={(e) => setName(e.target.value)}
-            value={name}
-            required
-          />
-          <input
-            type="button"
-            className="create-button"
-            value="Join"
-            onClick={() => {
-              setConfirmedName(true)
-              connection.send({
-                name
-              })?.then(() => console.log('successfully sent name'))
-                .catch((err) => console.error('failed to send name:', err))
-            }}
-          />
-        </>
+        <form
+          action={(formData) => {
+            const name = formData.get('name') as string
+            if (!name.trim()) return
+            setName(name)
+            connection.send({
+              name,
+            })
+          }}
+        >
+          <label className="text-field">
+            Enter your name:
+            <input
+              type="text"
+              id="name"
+              name="name"
+              className="input-field"
+              required
+            />
+          </label>
+
+          <button type="submit" className="create-button">
+            Submit
+          </button>
+        </form>
       )}
     </>
-  );
-};
+  )
+}
