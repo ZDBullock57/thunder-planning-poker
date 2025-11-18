@@ -11,8 +11,10 @@ export const App = () => {
   const [peer, setPeer] = useState<Peer | null>(null)
 
   useEffect(() => {
-    // TODO: Use local peer broker server for dev?
-    const peer = new Peer()
+    // Run local peer server (with npm run serve) during development
+    const peer = new Peer(
+      import.meta.env.DEV ? { host: 'localhost', port: 9000 } : {}
+    )
     peer.on('error', console.error)
     peer.on('open', (id) => {
       console.log('Connected to PeerJS server and got ID', id)
