@@ -11,7 +11,7 @@
 [x] Vote
 [x] Reveal votes
 [x] Auto-reveal after all users have voted
-[ ] Start new round functionality (reset votes, set new details)
+[x] Start new round functionality (reset votes, set new details)
 [ ] Styling
 [ ] Host on GH Pages
 [ ] readme
@@ -26,3 +26,6 @@
 [ ] Timer countdown for voting
 [ ] Dark mode
 [ ] Harass users who haven't voted yet
+[ ] Responsive design (i.e. mobile friendly)
+[ ] Alignment rating
+[ ] Round history (details + votes)

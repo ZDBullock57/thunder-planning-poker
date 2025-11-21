@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AllCards, Card } from './Card'
 import { useHostConnection } from '../utils/peerUtils'
 import type { HostData, UserData } from '../types'
@@ -11,9 +11,17 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const { data, sendData, connected } = useHostConnection<HostData, UserData>(
     joinId
   )
+  useEffect(
+    function resetVoteOnNewRound() {
+      if (data?.round !== 1) {
+        chooseCard('')
+      }
+    },
+    [data?.round]
+  )
   const chooseCard = (value: string) => {
     setCard(value)
-    sendData({ vote: value })
+    sendData({ vote: value || null })
   }
 
   if (!connected) return 'Connecting to host...'
@@ -33,8 +41,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
           <button
             className="create-button"
             onClick={() => {
-              setCard('')
-              sendData({ vote: null })
+              chooseCard('')
             }}
           >
             Clear choice

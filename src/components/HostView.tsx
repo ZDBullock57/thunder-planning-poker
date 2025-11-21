@@ -7,6 +7,7 @@ import { useClientConnections, usePeerId } from '../utils/peerUtils'
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
   const [details, setDetails] = useState('')
+  const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
 
   const peerId = usePeerId()
@@ -35,9 +36,9 @@ export const HostView = () => {
   // TODO: Maybe split up into multiple useEffects to prevent re-sending everything on any change?
   useEffect(
     function syncClients() {
-      sendData({ cards, details, sessionName })
+      sendData({ cards, details, sessionName, round })
     },
-    [cards, details, sessionName, sendData]
+    [cards, details, sessionName, round, sendData]
   )
 
   return !sessionName ? (
@@ -92,7 +93,13 @@ export const HostView = () => {
         return <UserCard key={i} userName={content ?? ''} />
       })}
 
-      <button className="create-button" onClick={() => setRevealed(false)}>
+      <button
+        className="create-button"
+        onClick={() => {
+          setRevealed(false)
+          setRound((prev) => prev + 1)
+        }}
+      >
         Start new pointing round - we found the lamb sauce
       </button>
     </>

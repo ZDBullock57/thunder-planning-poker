@@ -11,4 +11,6 @@ export type HostData = {
   cards?: (string | null)[]
   /** Options for voting */
   options?: string[]
+  /** The current round number */
+  round?: number
 }
