@@ -1,7 +1,4 @@
-/**
- * Pass prop to card that is the value? Iterate through the possible values and show a bunch of cards?
- * or is that silly to have a component that is literally a div
- */
+import { Card } from "@headlessui/react";
 
 export interface UserCardProps {
   userName: string;
@@ -9,12 +6,10 @@ export interface UserCardProps {
 
 export const UserCard = ({ userName }: UserCardProps) => {
   return (
-    <>
-      <div className="user-card-wrapper">
-        <div className="user-card" style={{ margin: "8px" }}>
-          {userName}
-        </div>
-      </div>
-    </>
+    <div className="flex justify-center">
+      <Card className="p-4 bg-white shadow-md rounded-lg">
+        <div className="text-lg font-medium text-gray-800">{userName}</div>
+      </Card>
+    </div>
   );
 };
