@@ -1,37 +1,45 @@
-import { useState, useEffect } from 'react'
-import { Peer } from 'peerjs'
+import { useEffect, useMemo, useState } from 'react'
 import { RevealButton } from './RevealButton'
 import { UserCard } from './UserCard'
+import type { HostData, UserData } from '../types'
+import { useClientConnections, usePeerId } from '../utils/peerUtils'
 
-type UserData = {
-  name?: string
-  vote?: string
-}
-
-// TODO: Vote context - A description or link to what is being voted on.
-//       Host can update this whenever
-
-export const HostView = ({ peer }: { peer: Peer }) => {
+export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
-  const [peerDataMap, setPeerDataMap] = useState<Record<string, UserData>>({})
+  const [details, setDetails] = useState('')
+  const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
 
-  useEffect(() => {
-    peer.on('connection', (connection) => {
-      console.log('user connected')
-      connection.on('close', () => {
-        // TODO: Delete user? This would happen if the user leaves
-      })
-      connection.on('data', (data: any) => {
-        console.log('Received user data', data)
-        setPeerDataMap((current) => ({
-          ...current,
-          [connection.peer]: { ...current[connection.peer], ...data },
-        }))
-        // TODO: Update all other users with names, but not votes
-      })
-    })
-  }, [peer])
+  const peerId = usePeerId()
+  const { data, sendData } = useClientConnections<UserData, HostData>()
+
+  useEffect(
+    function autoReveal() {
+      if (data.length && data.every((user) => user.vote)) {
+        setRevealed(true)
+      }
+    },
+    [data]
+  )
+
+  const cards = useMemo(
+    () =>
+      data.reduce((acc, user) => {
+        if (user.name) {
+          acc.push((revealed ? user.vote : user.name) ?? null)
+        }
+        return acc
+      }, [] as (string | null)[]),
+    [data, revealed]
+  )
+
+  // TODO: Maybe split up into multiple useEffects to prevent re-sending everything on any change?
+  useEffect(
+    function syncClients() {
+      sendData({ cards, details, sessionName, round })
+    },
+    [cards, details, sessionName, round, sendData]
+  )
 
   return !sessionName ? (
     <>
@@ -59,44 +67,63 @@ export const HostView = ({ peer }: { peer: Peer }) => {
     </>
   ) : (
     <>
-      <button
-        className="create-button"
-        onClick={() => {
-          const url = new URL(window.location.origin + '?join_id=' + peer.id)
-          navigator.clipboard
-            .writeText(url.href)
-            .then(() => alert('Link copied to clipboard!'))
-            .catch((err) => {
-              console.error('Failed to copy to clipboard', err)
-              alert('Failed to copy to clipboard')
-            })
-        }}
+      <CopyButton
+        text={new URL(window.location.origin + '?join_id=' + peerId).href}
       >
-        Copy to clipboard
-      </button>
+        Copy join link to clipboard
+      </CopyButton>
+
+      <label className="text-field">
+        Details
+        <textarea
+          onBlur={(e) => {
+            setDetails(e.target.value)
+          }}
+        />
+      </label>
 
       <RevealButton
         onReveal={() => {
           setRevealed(true)
-          // TODO: Send votes to users
         }}
       />
 
       {/* List users */}
-      {Object.values(peerDataMap)
-        .filter((user) => user.name)
-        .map((user) => {
-          return (
-            <UserCard
-              key={user.name}
-              userName={!revealed ? user.name! : user.vote!}
-            />
-          )
-        })}
+      {cards.map((content, i) => {
+        return <UserCard key={i} userName={content ?? ''} />
+      })}
 
-      <button className="create-button" onClick={() => setRevealed(false)}>
+      <button
+        className="create-button"
+        onClick={() => {
+          setRevealed(false)
+          setRound((prev) => prev + 1)
+        }}
+      >
         Start new pointing round - we found the lamb sauce
       </button>
     </>
+  )
+}
+
+function CopyButton({
+  text,
+  children,
+}: {
+  text: string
+  children?: React.ReactNode
+}) {
+  const [showCopied, setShowCopied] = useState(false)
+  return (
+    <button
+      className="create-button"
+      onClick={() => {
+        navigator.clipboard.writeText(text)
+        setShowCopied(true)
+        setTimeout(() => setShowCopied(false), 2000)
+      }}
+    >
+      {showCopied ? 'Copied!' : children ?? 'Copy'}
+    </button>
   )
 }

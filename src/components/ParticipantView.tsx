@@ -1,49 +1,47 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AllCards, Card } from './Card'
-import { type DataConnection, Peer } from 'peerjs'
+import { useHostConnection } from '../utils/peerUtils'
+import type { HostData, UserData } from '../types'
+import { UserCard } from './UserCard'
 
-export const ParticipantView = ({
-  peer,
-  joinId,
-}: {
-  peer: Peer
-  joinId: string
-}) => {
+export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useState('')
   const [card, setCard] = useState('')
+
+  const { data, sendData, connected } = useHostConnection<HostData, UserData>(
+    joinId
+  )
+  useEffect(
+    function resetVoteOnNewRound() {
+      if (data?.round !== 1) {
+        chooseCard('')
+      }
+    },
+    [data?.round]
+  )
   const chooseCard = (value: string) => {
     setCard(value)
-    connection?.send({ vote: value })
+    sendData({ vote: value || null })
   }
 
-  const [connection, setConnection] = useState<DataConnection>()
-  useEffect(() => {
-    const connection = peer.connect(joinId)
-    console.log('connected to host')
-    connection.on('open', () => {
-      console.log('host connection open')
-      setConnection(connection)
-
-      connection.on('data', (data) => {
-        console.log('Received data from host', data)
-        // TODO: Accept host data and update local state
-      })
-    })
-  }, [peer, joinId])
-
-  if (!connection) return 'Connecting to host...'
-
+  if (!connected) return 'Connecting to host...'
   return (
     <>
       {!!name ? (
         <>
-          <h1>{`Welcome, ${name}`}</h1>
+          <h2>{data?.sessionName}</h2>
+          <p>{`Welcome, ${name}!`}</p>
+          <pre>
+            {data?.details || '(Host has not provided any details yet)'}
+          </pre>
+          {data?.cards?.map((content, i) => {
+            return <UserCard key={i} userName={content ?? ''} />
+          })}
           {card ? <Card value={card} /> : <AllCards chooseCard={chooseCard} />}
           <button
             className="create-button"
             onClick={() => {
-              setCard('')
-              connection.send({ vote: null })
+              chooseCard('')
             }}
           >
             Clear choice
@@ -55,7 +53,7 @@ export const ParticipantView = ({
             const name = formData.get('name') as string
             if (!name.trim()) return
             setName(name)
-            connection.send({
+            sendData({
               name,
             })
           }}
