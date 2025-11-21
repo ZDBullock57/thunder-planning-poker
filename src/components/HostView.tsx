@@ -12,6 +12,15 @@ export const HostView = () => {
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
 
+  useEffect(
+    function autoReveal() {
+      if (data.length && data.every((user) => user.vote)) {
+        setRevealed(true)
+      }
+    },
+    [data]
+  )
+
   const cards = useMemo(
     () =>
       data.reduce((acc, user) => {

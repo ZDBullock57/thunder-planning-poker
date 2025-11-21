@@ -10,7 +10,7 @@
 [x] Show user list
 [x] Vote
 [x] Reveal votes
-[ ] Auto-reveal after all users have voted
+[x] Auto-reveal after all users have voted
 [ ] Start new round functionality (reset votes, set new details)
 [ ] Styling
 [ ] Host on GH Pages
