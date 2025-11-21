@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { RevealButton } from './RevealButton'
-import { UserCard } from './UserCard'
 import type { HostData, UserData } from '../types'
 import { useClientConnections, usePeerId } from '../utils/peerUtils'
+import { RevealButton } from './RevealButton'
+import { UserCard } from './UserCard'
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
@@ -67,14 +67,14 @@ export const HostView = () => {
       </form>
     </div>
   ) : (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-100 min-h-screen ">
       <CopyButton
         text={new URL(window.location.origin + '?join_id=' + peerId).href}
       >
         Copy join link to clipboard
       </CopyButton>
 
-      <label className="block text-gray-700 text-sm font-bold mt-4">
+      <label className="block text-gray-700 text-sm font-bold mb-4">
         Details
         <textarea
           className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -120,7 +120,7 @@ function CopyButton({
   const [showCopied, setShowCopied] = useState(false)
   return (
     <button
-      className="mt-4 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+      className="m-4 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
       onClick={() => {
         navigator.clipboard.writeText(text)
         setShowCopied(true)
