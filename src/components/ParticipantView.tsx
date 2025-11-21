@@ -3,7 +3,7 @@ import { AllCards, Card } from './Card'
 import { useHostConnection } from '../utils/peerUtils'
 import type { HostData, UserData } from '../types'
 import { UserCard } from './UserCard'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import { Fragment } from 'react'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
@@ -68,7 +68,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
       ) : (
         <Transition appear show={isModalOpen} as={Fragment}>
           <Dialog as="div" className="relative z-10" onClose={() => setIsModalOpen(false)}>
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -78,11 +78,11 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
               leaveTo="opacity-0 scale-95"
             >
               <div className="fixed inset-0 bg-black bg-opacity-25" />
-            </Transition.Child>
+            </TransitionChild>
 
             <div className="fixed inset-0 overflow-y-auto">
               <div className="flex items-center justify-center min-h-full p-4 text-center">
-                <Transition.Child
+                <TransitionChild
                   as={Fragment}
                   enter="ease-out duration-300"
                   enterFrom="opacity-0 scale-95"
@@ -91,13 +91,13 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <Dialog.Panel className="w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-                    <Dialog.Title
+                  <DialogPanel className="w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                    <DialogTitle
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
                     >
                       Enter your name
-                    </Dialog.Title>
+                    </DialogTitle>
                     <form
                       className="mt-4"
                       onSubmit={(e) => {
@@ -129,8 +129,8 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                         </button>
                       </div>
                     </form>
-                  </Dialog.Panel>
-                </Transition.Child>
+                  </DialogPanel>
+                </TransitionChild>
               </div>
             </div>
           </Dialog>
