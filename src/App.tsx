@@ -11,9 +11,14 @@ export const App = () => {
     <PeerProvider
       options={import.meta.env.DEV ? { host: 'localhost', port: 9000 } : {}}
       fallback="Connecting to peer server..."
-    >
-      <h1 className="title">Where’s the Lamb Sauce?</h1>
+    >      
+    <div className="min-h-screen bg-gray-100 font-sans">
+    {/* This is the previous style, before the blue box */}
+     <h1 className="text-5xl font-black text-center py-6 tracking-tight text-gray-800">
+      Where’s the Lamb Sauce?
+     </h1>
       {joinId ? <ParticipantView joinId={joinId} /> : <HostView />}
+    </div>
     </PeerProvider>
   )
 }
