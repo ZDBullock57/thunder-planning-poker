@@ -1,5 +1,4 @@
-import React, { useRef, useState } from 'react';
-
+import React, { useState } from 'react';
 
 type RevealButtonProps = {
   onReveal?: () => void;
@@ -10,33 +9,23 @@ export const RevealButton: React.FC<RevealButtonProps> = ({
   onReveal,
   label = 'Reveal Cards',
 }) => {
-  const [isBursting, setIsBursting] = useState(false);
-  const burstTimeoutRef = useRef<number | null>(null);
+  const [isClicked, setIsClicked] = useState(false);
 
   const handleClick = () => {
-    setIsBursting(true);
-    burstTimeoutRef.current = window.setTimeout(() => {
-      setIsBursting(false);
-    }, 600);
-
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 300); // Reset after 300ms
     onReveal?.();
   };
 
   return (
     <button
       type="button"
-      className={`magic-btn reveal-btn ${isBursting ? 'reveal-btn--burst' : ''}`}
       onClick={handleClick}
+      className={`relative px-4 py-2 bg-blue-500 text-white font-medium rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+        isClicked ? 'ring-4 ring-blue-300' : ''
+      }`}
     >
-      <span className="magic-btn__glow" />
-      <span className="magic-btn__shine" />
-      <span className="magic-btn__label">{label}</span>
-      <span className="reveal-btn__sparkles">
-        <span className="sparkle sparkle--1" />
-        <span className="sparkle sparkle--2" />
-        <span className="sparkle sparkle--3" />
-        <span className="sparkle sparkle--4" />
-      </span>
+      <span>{label}</span>
     </button>
   );
 };
