@@ -69,7 +69,7 @@ export const HostView = () => {
   ) : (
     <div className="p-6 bg-gray-100 min-h-screen ">
       <CopyButton
-        text={new URL(window.location.origin + '?join_id=' + peerId).href}
+        text={new URL(window.location.href + '?join_id=' + peerId).href}
       >
         Copy join link to clipboard
       </CopyButton>
