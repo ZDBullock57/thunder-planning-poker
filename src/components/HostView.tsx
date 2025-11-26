@@ -11,7 +11,7 @@ export const HostView = () => {
   const [details, setDetails] = useState('')
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
-  const [options] = useStorage('options', DEFAULT_POKER_VALUES)
+  const [options, setOptions] = useStorage('options', DEFAULT_POKER_VALUES)
 
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
@@ -82,6 +82,22 @@ export const HostView = () => {
       >
         Copy join link 📋
       </CopyButton>
+
+      <label className="block text-gray-700 text-sm font-bold w-full">
+        Voting options (one per line)
+        <textarea
+          className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          defaultValue={options.join('\n')}
+          onBlur={(e) => {
+            setOptions(
+              e.target.value
+                .split(/[\r\n]+/)
+                .map((v) => v.trim())
+                .filter((v) => v.length > 0)
+            )
+          }}
+        />
+      </label>
 
       <label className="block text-gray-700 text-sm font-bold mb-4 w-full">
         Details
