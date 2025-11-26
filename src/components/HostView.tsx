@@ -3,12 +3,15 @@ import type { HostData, UserData } from '../types'
 import { useClientConnections, usePeerId } from '../utils/peerUtils'
 import { RevealButton } from './RevealButton'
 import { UserCard } from './UserCard'
+import { useStorage } from '../utils/storage'
+import { DEFAULT_POKER_VALUES } from '../utils/utils'
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
   const [details, setDetails] = useState('')
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
+  const [options] = useStorage('options', DEFAULT_POKER_VALUES)
 
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
@@ -39,9 +42,9 @@ export const HostView = () => {
 
   useEffect(
     function syncClients() {
-      sendData({ cards, details, sessionName, round })
+      sendData({ cards, details, sessionName, round, options })
     },
-    [cards, details, sessionName, round, sendData]
+    [cards, details, sessionName, round, sendData, options]
   )
 
   return !sessionName ? (

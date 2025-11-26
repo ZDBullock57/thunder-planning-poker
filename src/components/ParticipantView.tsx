@@ -14,7 +14,7 @@ import { useStorage } from '../utils/storage'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useStorage('name', '')
-  const [card, setCard] = useState('')
+  const [vote, setVote] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(true)
 
   const { data, sendData, connected } = useHostConnection<HostData, UserData>(
@@ -22,7 +22,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
   )
 
   const chooseCard = (value: string) => {
-    setCard(value)
+    setVote(value)
     sendData({ vote: value || null })
   }
   useEffect(
@@ -32,6 +32,14 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
       }
     },
     [data?.round]
+  )
+  useEffect(
+    function resetVoteIfNotInOptions() {
+      if (data?.options && vote && !data.options.includes(vote)) {
+        chooseCard('')
+      }
+    },
+    [data?.options]
   )
 
   if (!connected) {
@@ -61,10 +69,10 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
             ))}
           </div>
           <div className="mt-4">
-            {card ? (
-              <Card value={card} />
+            {vote ? (
+              <Card value={vote} />
             ) : (
-              <AllCards chooseCard={chooseCard} />
+              <AllCards options={data?.options ?? []} chooseCard={chooseCard} />
             )}
           </div>
           <button
