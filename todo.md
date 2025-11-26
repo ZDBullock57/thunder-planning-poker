@@ -13,6 +13,7 @@
 - [x] Auto-reveal after all users have voted
 - [x] Start new round functionality (reset votes, set new details)
 - [ ] Styling
+  - [ ] Cards sizing, spacing, and selection (styled radio buttons?)
 - [x] Host on GH Pages
 - [ ] readme
 - [ ] Accessible design
@@ -21,8 +22,8 @@
 
 - [ ] Markdown support for details field
 - [x] Persist usernames
-- [ ] Custom options
-- [ ] Persist custom options
+- [x] Custom options
+- [x] Persist custom options
 - [ ] Persist multiple option lists (e.g. Fibonacci, T-shirt sizes, lunch ideas)
 - [ ] Timer countdown for voting
 - [ ] Dark mode
