@@ -21,6 +21,13 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     joinId
   )
 
+  useEffect(
+    function updateTitle() {
+      window.document.title = data?.sessionName || "Where's the Lamb Sauce?"
+    },
+    [data?.sessionName]
+  )
+
   const chooseCard = (value: string) => {
     setVote(value)
     sendData({ vote: value || null })
