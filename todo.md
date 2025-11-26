@@ -15,6 +15,7 @@
 - [ ] Styling
 - [x] Host on GH Pages
 - [ ] readme
+- [ ] Accessible design
 
 ## Bonus
 
@@ -30,3 +31,7 @@
 - [ ] Alignment rating
 - [ ] Round history (details + votes)
 - [ ] [Preview PR Deploy](https://github.com/marketplace/actions/deploy-pr-preview)
+- [x] Display user vote status
+- [ ] Anonymous vs identified voting modes
+- [ ] Ability to add option?
+  - [ ] Approval required from host?

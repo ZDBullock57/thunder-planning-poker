@@ -26,7 +26,11 @@ export const HostView = () => {
     () =>
       data.reduce((acc, user) => {
         if (user.name) {
-          acc.push((revealed ? user.vote : user.name) ?? null)
+          acc.push(
+            (revealed
+              ? user.vote
+              : `${user.name} ${user.vote ? '✔️' : '⏳'}`) ?? null
+          )
         }
         return acc
       }, [] as (string | null)[]),
