@@ -1,6 +1,5 @@
-import { Menu, MenuButton } from "@headlessui/react"
-import { Fragment } from "react"
-import { DEFAULT_POKER_VALUES } from "../utils/utils"
+import { Menu, MenuButton } from '@headlessui/react'
+import { Fragment } from 'react'
 
 export const Card = ({ value }: { value: string }) => {
   return (
@@ -10,16 +9,22 @@ export const Card = ({ value }: { value: string }) => {
   )
 }
 
-export const AllCards = ({ chooseCard }: { chooseCard: Function }) => {
+export const AllCards = ({
+  options,
+  chooseCard,
+}: {
+  options: string[]
+  chooseCard: Function
+}) => {
   return (
     <div className="grid grid-cols-4 gap-4 p-4">
-      {DEFAULT_POKER_VALUES.map((pokerValue) => (
-        <Menu as={Fragment} key={pokerValue}>
+      {options.map((value) => (
+        <Menu as={Fragment} key={value}>
           <MenuButton
-            onClick={() => chooseCard(pokerValue)}
+            onClick={() => chooseCard(value)}
             className="focus:outline-none"
           >
-            <Card value={pokerValue} />
+            <Card value={value} />
           </MenuButton>
         </Menu>
       ))}

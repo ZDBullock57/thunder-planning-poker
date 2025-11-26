@@ -77,7 +77,7 @@ export const useHostConnection = <T, K>(joinId: string) => {
         setData((current) => ({ ...current, ...data }))
       })
     })
-    // TODO: cleanup?
+    return () => connection.close()
   }, [peer, joinId])
 
   return { data, sendData, connected: !!connection }
