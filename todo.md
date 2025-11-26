@@ -13,13 +13,13 @@
 - [x] Auto-reveal after all users have voted
 - [x] Start new round functionality (reset votes, set new details)
 - [ ] Styling
-- [ ] Host on GH Pages
+- [x] Host on GH Pages
 - [ ] readme
 
 ## Bonus
 
 - [ ] Markdown support for details field
-- [ ] Persist usernames
+- [x] Persist usernames
 - [ ] Custom options
 - [ ] Persist custom options
 - [ ] Persist multiple option lists (e.g. Fibonacci, T-shirt sizes, lunch ideas)
