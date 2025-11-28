@@ -34,7 +34,7 @@ export const CountdownTimer = ({durationSeconds, startTimestamp, onTimerEnd}: Co
         const tick = () => {
     
             const now = Date.now()
-            const elapsed = now - startTime.current
+            const elapsed = now - (startTime.current ??  0)
             const remaining = Math.max(0, totalDurationMs - elapsed)
       
             const remainingSeconds = Math.ceil(remaining / 1000)
