@@ -11,6 +11,7 @@ import { useHostConnection } from '../utils/peerUtils'
 import { AllCards, Card } from './Card'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
+import { CountdownTimer } from './CountdownTimer'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useStorage('name', '')
@@ -27,7 +28,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     },
     [data?.sessionName]
   )
-
+  
   const chooseCard = (value: string) => {
     setVote(value)
     sendData({ vote: value || null })
@@ -48,7 +49,18 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     },
     [data?.options]
   )
+  
+  
+  const isRevealed = data?.cards?.some(
+    (card) => card?.length === 1 || card?.length === 2
+  )
 
+  const voteStatus = vote
+  ? isRevealed
+  ? `Your vote: ${vote}`
+  : `Voted: ${vote}`
+  : 'Select your card'
+  
   if (!connected) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -58,7 +70,6 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
       </div>
     )
   }
-
   return (
     <>
       {!isModalOpen ? (
@@ -67,9 +78,43 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
             {data?.sessionName}
           </h2>
           <p className="text-lg text-gray-600">{`Welcome, ${name}!`}</p>
-          <pre className="p-4 bg-gray-100 rounded-md text-gray-700">
-            {data?.details || '(Host has not provided any details yet)'}
-          </pre>
+          {data?.details && (
+          <p className="text-lg text-gray-600 italic mb-4 p-3 bg-gray-50 rounded-lg">
+            Details: {data.details}
+          </p>
+          )}
+
+          <div className="flex justify-between items-center mb-4 border-b pb-4">
+          <p className="text-lg font-medium text-gray-700">
+            Round: <span className="font-bold">{data?.round || 1}</span>
+          </p>
+
+          <div className="flex justify-center items-center">
+            {data?.countdownStartTimestamp !== null &&
+            data?.timeLimitSeconds !== undefined ? (
+              <CountdownTimer
+                durationSeconds={data.timeLimitSeconds}
+                startTimestamp={data?.countdownStartTimestamp ?? null}
+              />
+            ) : (
+              <div className="text-2xl font-semibold text-gray-500 py-2">
+                Timer Stopped
+              </div>
+            )}
+          </div> 
+ 
+        </div>
+
+        <div className="text-center mb-6">
+          <p
+            className={`text-xl font-bold transition-colors duration-300 ${
+              vote ? 'text-blue-600' : 'text-gray-500'
+            }`}
+          >
+            {voteStatus}
+          </p>
+        </div>
+
           <div className="space-y-4">
             {data?.cards?.map((content, i) => (
               <UserCard key={i} userName={content ?? ''} />
