@@ -5,6 +5,7 @@ import { RevealButton } from './RevealButton'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { DEFAULT_POKER_VALUES } from '../utils/utils'
+import { CountdownTimer } from './CountdownTimer'
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
@@ -12,6 +13,8 @@ export const HostView = () => {
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
   const [options, setOptions] = useStorage('options', DEFAULT_POKER_VALUES)
+  const [timeLimitSeconds] = useState(120) 
+  const [countdownStartTimestamp, setCountdownStartTimestamp] = useState<number | null>(null)
 
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
@@ -20,6 +23,7 @@ export const HostView = () => {
     function autoReveal() {
       if (data.length && data.every((user) => user.vote)) {
         setRevealed(true)
+        setCountdownStartTimestamp(null)
       }
     },
     [data]
@@ -42,10 +46,35 @@ export const HostView = () => {
 
   useEffect(
     function syncClients() {
-      sendData({ cards, details, sessionName, round, options })
+      const hostData: HostData = {
+        cards,
+        details,
+        sessionName,
+        round,
+        options,
+        timeLimitSeconds,
+        countdownStartTimestamp,
+      }
+      sendData(hostData)
+    
     },
-    [cards, details, sessionName, round, sendData, options]
+    [cards, details, sessionName, round, sendData, options,     timeLimitSeconds, countdownStartTimestamp,]
   )
+
+
+    const handleTimerEnd = () => {
+      setRevealed(true)
+      setCountdownStartTimestamp(null) 
+    }
+    
+
+    useEffect(() => {
+      // Only start the timer if a session name exists and the timer is not running
+      if (sessionName && countdownStartTimestamp === null) {
+        setCountdownStartTimestamp(Date.now())
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sessionName])
 
   return !sessionName ? (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -56,6 +85,7 @@ export const HostView = () => {
           if (!sessionName.trim()) return
           setSessionName(sessionName)
           window.document.title = sessionName
+          setCountdownStartTimestamp(Date.now())
         }}
       >
         <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -77,6 +107,20 @@ export const HostView = () => {
   ) : (
     <div className="p-6 bg-gray-100 min-h-screen flex flex-col gap-4 items-start">
       <h2 className="text-3xl">{sessionName}</h2>
+       {/*Timer Display section */}
+       <div className="flex justify-center items-center w-full">
+        {countdownStartTimestamp !== null && !revealed ? ( 
+          <CountdownTimer
+            durationSeconds={timeLimitSeconds}
+            startTimestamp={countdownStartTimestamp}
+            onTimerEnd={handleTimerEnd} 
+          />
+        ) : (
+          <div className="text-2xl font-semibold text-green-600 py-2">
+            Vote Closed
+          </div>
+        )}
+      </div>
       <CopyButton
         text={new URL(window.location.href + '?join_id=' + peerId).href}
       >
@@ -112,6 +156,7 @@ export const HostView = () => {
       <RevealButton
         onReveal={() => {
           setRevealed(true)
+          setCountdownStartTimestamp(null) 
         }}
       />
 
@@ -127,6 +172,7 @@ export const HostView = () => {
         onClick={() => {
           setRevealed(false)
           setRound((prev) => prev + 1)
+          setCountdownStartTimestamp(Date.now()) 
         }}
       >
         Start new pointing round - we found the lamb sauce
