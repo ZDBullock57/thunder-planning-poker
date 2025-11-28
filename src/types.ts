@@ -13,4 +13,8 @@ export type HostData = {
   options?: string[]
   /** The current round number */
   round?: number
+  /** The total time allocated for voting in seconds */
+  timeLimitSeconds?: number
+  /** Timestamp (in milliseconds) when the current round's timer started */
+  countdownStartTimestamp?: number | null
 }
