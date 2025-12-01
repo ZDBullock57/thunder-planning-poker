@@ -44,7 +44,7 @@ export const HostView = () => {
     return data.filter((user): user is UserData => !!user.name)
       .map((user) => ({
         name: user.name ?? null,
-        vote: user.vote ?? null, // Vote is null if not cast
+        vote: user.vote ?? null, 
       }))
   }, [data])
 
@@ -109,7 +109,8 @@ export const HostView = () => {
       setRevealed(false);
       setCountdownStartTimestamp(null);
       
-      }, [deckKey, setCustomOptions, setRevealed, setCountdownStartTimestamp, customOptions])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [deckKey])
 
     useEffect(() => {
       // Only start the timer if a session name exists and the timer is not running

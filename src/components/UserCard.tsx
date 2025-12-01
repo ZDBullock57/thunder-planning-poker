@@ -24,9 +24,8 @@ export interface UserCardProps {
   isRevealed: boolean;
 }
 
-export const UserCard = ({  content, userName, isRevealed }: UserCardProps) => {
+export const UserCard = ({  userName, content, isRevealed }: UserCardProps) => {
   const hasVoted = content !== null && content !== '';
-
   let stateClasses = "";
   let contentColorClass = CONTENT_COLOR_REVEALED; 
 

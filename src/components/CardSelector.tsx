@@ -87,9 +87,6 @@ export const CardSelector = ({
 
   return (
     <div className={CARD_DECK_CONTAINER_CLASSES}>
-      {/* The RadioGroup now uses flex-wrap to allow cards to wrap onto the next line,
-        and max-w-6xl mx-auto centers the deck content.
-      */}
       <RadioGroup
         value={selectedValue ?? ''}
         onChange={handleSelectionChange}

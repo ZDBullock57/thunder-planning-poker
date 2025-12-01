@@ -37,7 +37,6 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
   useEffect(
     function resetVoteOnNewRound() {
       if (data?.round !== 1) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         chooseCard('')
       }
     },
@@ -46,7 +45,6 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
   useEffect(
     function resetVoteIfNotInOptions() {
       if (data?.options && vote && !data.options.includes(vote)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         chooseCard('')
       }
     },
