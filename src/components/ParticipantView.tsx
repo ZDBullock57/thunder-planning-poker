@@ -8,10 +8,10 @@ import {
 import { Fragment, useEffect, useState } from 'react'
 import type { HostData, UserData } from '../types'
 import { useHostConnection } from '../utils/peerUtils'
-import { AllCards, Card } from './Card'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { CountdownTimer } from './CountdownTimer'
+import { CardSelector } from './CardSelector'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useStorage('name', '')
@@ -33,9 +33,11 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     setVote(value)
     sendData({ vote: value || null })
   }
+
   useEffect(
     function resetVoteOnNewRound() {
       if (data?.round !== 1) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         chooseCard('')
       }
     },
@@ -44,6 +46,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
   useEffect(
     function resetVoteIfNotInOptions() {
       if (data?.options && vote && !data.options.includes(vote)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         chooseCard('')
       }
     },
@@ -71,9 +74,9 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     )
   }
   return (
-    <>
+    <div className="flex flex-col h-screen overflow-hidden">
       {!isModalOpen ? (
-        <div className="p-6 space-y-6">
+       <div className="flex-grow overflow-y-auto p-6 space-y-6 pb-48">
           <h2 className="text-2xl font-bold text-gray-800">
             {data?.sessionName}
           </h2>
@@ -115,17 +118,18 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
           </p>
         </div>
 
-          <div className="space-y-4">
-            {data?.cards?.map((content, i) => (
-              <UserCard key={i} userName={content ?? ''} />
-            ))}
-          </div>
-          <div className="mt-4">
-            {vote ? (
-              <Card value={vote} />
-            ) : (
-              <AllCards options={data?.options ?? []} chooseCard={chooseCard} />
-            )}
+        <div className="flex flex-wrap justify-center gap-4">
+          {data?.cards?.map((voteContent, i) => {
+              const userName = data?.userNames?.[i] || `Participant ${i + 1}`;
+              return (
+                <UserCard 
+                  key={i} 
+                  userName={userName}
+                  content={voteContent} 
+                  isRevealed={isRevealed ?? false} 
+                />
+              );
+        })}
           </div>
           <button
             className="px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"
@@ -210,6 +214,11 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
           </Dialog>
         </Transition>
       )}
-    </>
+    <CardSelector
+      selectedValue={vote || null} 
+      onSelectCard={chooseCard}  
+      options={data?.options ?? [] }
+    />
+    </div>
   )
 }

@@ -4,20 +4,52 @@ import { useClientConnections, usePeerId } from '../utils/peerUtils'
 import { RevealButton } from './RevealButton'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
-import { DEFAULT_POKER_VALUES } from '../utils/utils'
 import { CountdownTimer } from './CountdownTimer'
+import {
+  DEFAULT_DECK_KEY,
+  CARD_DECKS,
+  DECK_OPTIONS,
+} from '../utils/utils' 
+
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
   const [details, setDetails] = useState('')
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
-  const [options, setOptions] = useStorage('options', DEFAULT_POKER_VALUES)
+  const [deckKey, setDeckKey] = useStorage<keyof typeof CARD_DECKS>(
+    'deckKey',
+    DEFAULT_DECK_KEY
+    
+  )
+  const [customOptions, setCustomOptions] = useStorage<string[]>(
+    'customDeckOptions',
+    CARD_DECKS[DEFAULT_DECK_KEY]
+  )
+  
+  const [optionsInput, setOptionsInput] = useState(() => customOptions.join('\n'))
   const [timeLimitSeconds] = useState(120) 
   const [countdownStartTimestamp, setCountdownStartTimestamp] = useState<number | null>(null)
 
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
+
+
+  const options =
+  deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY
+    ? customOptions
+    : CARD_DECKS[deckKey] || CARD_DECKS[DEFAULT_DECK_KEY]
+
+  const userStatusList= useMemo(() => {
+    return data.filter((user): user is UserData => !!user.name)
+      .map((user) => ({
+        name: user.name ?? null,
+        vote: user.vote ?? null, // Vote is null if not cast
+      }))
+  }, [data])
+
+  const userNames = useMemo(() => userStatusList.map(u => u.name), [userStatusList]);
+  const userVotes = useMemo(() => userStatusList.map(u => revealed ? u.vote : null), [userStatusList, revealed]);
 
   useEffect(
     function autoReveal() {
@@ -29,25 +61,11 @@ export const HostView = () => {
     [data]
   )
 
-  const cards = useMemo(
-    () =>
-      data.reduce((acc, user) => {
-        if (user.name) {
-          acc.push(
-            (revealed
-              ? user.vote
-              : `${user.name} ${user.vote ? '✔️' : '⏳'}`) ?? null
-          )
-        }
-        return acc
-      }, [] as (string | null)[]),
-    [data, revealed]
-  )
-
   useEffect(
     function syncClients() {
       const hostData: HostData = {
-        cards,
+        cards: userVotes,
+        userNames: userNames, 
         details,
         sessionName,
         round,
@@ -58,15 +76,40 @@ export const HostView = () => {
       sendData(hostData)
     
     },
-    [cards, details, sessionName, round, sendData, options,     timeLimitSeconds, countdownStartTimestamp,]
+    [userVotes, details, sessionName, round, sendData, options, timeLimitSeconds, countdownStartTimestamp, userNames]
   )
-
 
     const handleTimerEnd = () => {
       setRevealed(true)
       setCountdownStartTimestamp(null) 
     }
     
+    const handleOptionsUpdate = (text: string) => {
+      setOptionsInput(text)
+    
+      const newOptionsArray = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+    
+      if (deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY) {
+        setCustomOptions(newOptionsArray)
+      }
+    }
+
+    useEffect(() => {
+      if (deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY) {
+        // Use whatever is currently stored in customOptions
+        setOptionsInput(customOptions.join('\n'))
+      } else {
+        const newOptions = CARD_DECKS[deckKey] || CARD_DECKS[DEFAULT_DECK_KEY]
+        // For built-in decks, we only update the input, not the stored custom deck
+        setOptionsInput(newOptions.join('\n'))
+      }
+      setRevealed(false);
+      setCountdownStartTimestamp(null);
+      
+      }, [deckKey, setCustomOptions, setRevealed, setCountdownStartTimestamp, customOptions])
 
     useEffect(() => {
       // Only start the timer if a session name exists and the timer is not running
@@ -126,22 +169,39 @@ export const HostView = () => {
       >
         Copy join link 📋
       </CopyButton>
+      <div className='w-full'>
+        <label className="block text-gray-700 text-sm font-bold w-full">
+          Voting options (one per line)
+          <select
+              className="ml-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={deckKey}
+              onChange={(e) => {
+                const newKey = e.target.value as keyof typeof CARD_DECKS
+                setDeckKey(newKey)
+                // Reset round state here
+                setRevealed(false)
+                setCountdownStartTimestamp(null)
+              }}
+            >
+              {Object.entries(DECK_OPTIONS).map(([key, value]) => (
+                <option key={key} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+        </label>
 
-      <label className="block text-gray-700 text-sm font-bold w-full">
-        Voting options (one per line)
-        <textarea
-          className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          defaultValue={options.join('\n')}
-          onBlur={(e) => {
-            setOptions(
-              e.target.value
-                .split(/[\r\n]+/)
-                .map((v) => v.trim())
-                .filter((v) => v.length > 0)
-            )
-          }}
-        />
-      </label>
+        <label className="block text-gray-700 text-sm font-bold w-full mt-3">
+            Custom Deck Values (One value per line)
+            <textarea
+              className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"
+              value={optionsInput}
+              onChange={(e) => handleOptionsUpdate(e.target.value)}
+              rows={5}
+              placeholder="e.g. 1, 2, 3, 5, 8, 13, 20, ?"
+            />
+        </label>
+      </div>
 
       <label className="block text-gray-700 text-sm font-bold mb-4 w-full">
         Details
@@ -160,10 +220,10 @@ export const HostView = () => {
         }}
       />
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap justify-center gap-4 pb-32">
         {/* List users */}
-        {cards.map((content, i) => {
-          return <UserCard key={i} userName={content ?? ''} />
+        {userStatusList.map((user, i) => {
+          return <UserCard key={i} userName={user.name ?? ''} content={user.vote} isRevealed={revealed} />
         })}
       </div>
 
