@@ -25,7 +25,7 @@
 - [x] Custom options
 - [x] Persist custom options
 - [ ] Persist multiple option lists (e.g. Fibonacci, T-shirt sizes, lunch ideas)
-- [ ] Timer countdown for voting
+- [x] Timer countdown for voting
 - [ ] Dark mode
 - [ ] Harass users who haven't voted yet
 - [ ] Responsive design (i.e. mobile friendly)
