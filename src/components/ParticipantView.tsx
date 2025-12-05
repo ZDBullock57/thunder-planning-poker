@@ -1,19 +1,37 @@
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react'
 import { Fragment, useEffect, useState } from 'react'
 import type { HostData, UserData } from '../types'
 import { useHostConnection } from '../utils/peerUtils'
 import { AllCards, Card } from './Card'
 import { UserCard } from './UserCard'
+import { useStorage } from '../utils/storage'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
-  const [name, setName] = useState('')
-  const [card, setCard] = useState('')
+  const [name, setName] = useStorage('name', '')
+  const [vote, setVote] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(true)
 
   const { data, sendData, connected } = useHostConnection<HostData, UserData>(
     joinId
   )
 
+  useEffect(
+    function updateTitle() {
+      window.document.title = data?.sessionName || "Where's the Lamb Sauce?"
+    },
+    [data?.sessionName]
+  )
+
+  const chooseCard = (value: string) => {
+    setVote(value)
+    sendData({ vote: value || null })
+  }
   useEffect(
     function resetVoteOnNewRound() {
       if (data?.round !== 1) {
@@ -22,25 +40,32 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     },
     [data?.round]
   )
-
-  const chooseCard = (value: string) => {
-    setCard(value)
-    sendData({ vote: value || null })
-  }
+  useEffect(
+    function resetVoteIfNotInOptions() {
+      if (data?.options && vote && !data.options.includes(vote)) {
+        chooseCard('')
+      }
+    },
+    [data?.options]
+  )
 
   if (!connected) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-lg font-medium text-gray-700">Connecting to host...</p>
+        <p className="text-lg font-medium text-gray-700">
+          Connecting to host...
+        </p>
       </div>
     )
   }
 
   return (
     <>
-      {name ? (
+      {!isModalOpen ? (
         <div className="p-6 space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800">{data?.sessionName}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {data?.sessionName}
+          </h2>
           <p className="text-lg text-gray-600">{`Welcome, ${name}!`}</p>
           <pre className="p-4 bg-gray-100 rounded-md text-gray-700">
             {data?.details || '(Host has not provided any details yet)'}
@@ -51,10 +76,10 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
             ))}
           </div>
           <div className="mt-4">
-            {card ? (
-              <Card value={card} />
+            {vote ? (
+              <Card value={vote} />
             ) : (
-              <AllCards chooseCard={chooseCard} />
+              <AllCards options={data?.options ?? []} chooseCard={chooseCard} />
             )}
           </div>
           <button
@@ -66,7 +91,11 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
         </div>
       ) : (
         <Transition appear show={isModalOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={() => setIsModalOpen(false)}>
+          <Dialog
+            as="div"
+            className="relative z-10"
+            onClose={() => setIsModalOpen(false)}
+          >
             <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
@@ -117,6 +146,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                           name="name"
                           className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           required
+                          defaultValue={name}
                         />
                       </label>
                       <div className="mt-4">

@@ -13,15 +13,17 @@
 - [x] Auto-reveal after all users have voted
 - [x] Start new round functionality (reset votes, set new details)
 - [ ] Styling
-- [ ] Host on GH Pages
+  - [ ] Cards sizing, spacing, and selection (styled radio buttons?)
+- [x] Host on GH Pages
 - [ ] readme
+- [ ] Accessible design
 
 ## Bonus
 
 - [ ] Markdown support for details field
-- [ ] Persist usernames
-- [ ] Custom options
-- [ ] Persist custom options
+- [x] Persist usernames
+- [x] Custom options
+- [x] Persist custom options
 - [ ] Persist multiple option lists (e.g. Fibonacci, T-shirt sizes, lunch ideas)
 - [ ] Timer countdown for voting
 - [ ] Dark mode
@@ -30,3 +32,7 @@
 - [ ] Alignment rating
 - [ ] Round history (details + votes)
 - [ ] [Preview PR Deploy](https://github.com/marketplace/actions/deploy-pr-preview)
+- [x] Display user vote status
+- [ ] Anonymous vs identified voting modes
+- [ ] Ability to add option?
+  - [ ] Approval required from host?

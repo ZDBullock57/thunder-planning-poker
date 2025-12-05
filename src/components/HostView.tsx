@@ -3,12 +3,15 @@ import type { HostData, UserData } from '../types'
 import { useClientConnections, usePeerId } from '../utils/peerUtils'
 import { RevealButton } from './RevealButton'
 import { UserCard } from './UserCard'
+import { useStorage } from '../utils/storage'
+import { DEFAULT_POKER_VALUES } from '../utils/utils'
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
   const [details, setDetails] = useState('')
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
+  const [options, setOptions] = useStorage('options', DEFAULT_POKER_VALUES)
 
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
@@ -26,7 +29,11 @@ export const HostView = () => {
     () =>
       data.reduce((acc, user) => {
         if (user.name) {
-          acc.push((revealed ? user.vote : user.name) ?? null)
+          acc.push(
+            (revealed
+              ? user.vote
+              : `${user.name} ${user.vote ? '✔️' : '⏳'}`) ?? null
+          )
         }
         return acc
       }, [] as (string | null)[]),
@@ -35,9 +42,9 @@ export const HostView = () => {
 
   useEffect(
     function syncClients() {
-      sendData({ cards, details, sessionName, round })
+      sendData({ cards, details, sessionName, round, options })
     },
-    [cards, details, sessionName, round, sendData]
+    [cards, details, sessionName, round, sendData, options]
   )
 
   return !sessionName ? (
@@ -48,6 +55,7 @@ export const HostView = () => {
           const sessionName = formData.get('sessionName') as string
           if (!sessionName.trim()) return
           setSessionName(sessionName)
+          window.document.title = sessionName
         }}
       >
         <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -67,14 +75,31 @@ export const HostView = () => {
       </form>
     </div>
   ) : (
-    <div className="p-6 bg-gray-100 min-h-screen ">
+    <div className="p-6 bg-gray-100 min-h-screen flex flex-col gap-4 items-start">
+      <h2 className="text-3xl">{sessionName}</h2>
       <CopyButton
         text={new URL(window.location.href + '?join_id=' + peerId).href}
       >
-        Copy join link to clipboard
+        Copy join link 📋
       </CopyButton>
 
-      <label className="block text-gray-700 text-sm font-bold mb-4">
+      <label className="block text-gray-700 text-sm font-bold w-full">
+        Voting options (one per line)
+        <textarea
+          className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          defaultValue={options.join('\n')}
+          onBlur={(e) => {
+            setOptions(
+              e.target.value
+                .split(/[\r\n]+/)
+                .map((v) => v.trim())
+                .filter((v) => v.length > 0)
+            )
+          }}
+        />
+      </label>
+
+      <label className="block text-gray-700 text-sm font-bold mb-4 w-full">
         Details
         <textarea
           className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -120,7 +145,7 @@ function CopyButton({
   const [showCopied, setShowCopied] = useState(false)
   return (
     <button
-      className="m-4 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+      className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
       onClick={() => {
         navigator.clipboard.writeText(text)
         setShowCopied(true)
