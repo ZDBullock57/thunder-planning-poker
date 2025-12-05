@@ -9,6 +9,8 @@ export type HostData = {
   details?: string
   /** What to display in the user cards */
   cards?: (string | null)[]
+  /** What to display in the user names */
+  userNames?: (string | null)[]
   /** Options for voting */
   options?: string[]
   /** The current round number */

@@ -12,8 +12,8 @@
 - [x] Reveal votes
 - [x] Auto-reveal after all users have voted
 - [x] Start new round functionality (reset votes, set new details)
-- [ ] Styling
-  - [ ] Cards sizing, spacing, and selection (styled radio buttons?)
+- [x] Styling
+  - [x] Cards sizing, spacing, and selection (styled radio buttons?)
 - [x] Host on GH Pages
 - [ ] readme
 - [ ] Accessible design
@@ -24,7 +24,7 @@
 - [x] Persist usernames
 - [x] Custom options
 - [x] Persist custom options
-- [ ] Persist multiple option lists (e.g. Fibonacci, T-shirt sizes, lunch ideas)
+- [x] Persist multiple option lists (e.g. Fibonacci, T-shirt sizes, lunch ideas)
 - [x] Timer countdown for voting
 - [ ] Dark mode
 - [ ] Harass users who haven't voted yet
@@ -36,3 +36,5 @@
 - [ ] Anonymous vs identified voting modes
 - [ ] Ability to add option?
   - [ ] Approval required from host?
+- [x] Custom card deck (host-only) to edit existing ones
+  - [x] Allow host to create, edit, custom card decks in addition to the built-in ones (Fibonacci, T-shirt sizes, etc) including name + list of values/labels
