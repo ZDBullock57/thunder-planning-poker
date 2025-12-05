@@ -8,9 +8,10 @@ import {
 import { Fragment, useEffect, useState } from 'react'
 import type { HostData, UserData } from '../types'
 import { useHostConnection } from '../utils/peerUtils'
-import { AllCards, Card } from './Card'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
+import { CountdownTimer } from './CountdownTimer'
+import { CardSelector } from './CardSelector'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useStorage('name', '')
@@ -27,11 +28,12 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     },
     [data?.sessionName]
   )
-
+  
   const chooseCard = (value: string) => {
     setVote(value)
     sendData({ vote: value || null })
   }
+
   useEffect(
     function resetVoteOnNewRound() {
       if (data?.round !== 1) {
@@ -48,7 +50,18 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     },
     [data?.options]
   )
+  
+  
+  const isRevealed = data?.cards?.some(
+    (card) => card?.length === 1 || card?.length === 2
+  )
 
+  const voteStatus = vote
+  ? isRevealed
+  ? `Your vote: ${vote}`
+  : `Voted: ${vote}`
+  : 'Select your card'
+  
   if (!connected) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -58,29 +71,63 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
       </div>
     )
   }
-
   return (
-    <>
+    <div className="flex flex-col h-screen overflow-hidden">
       {!isModalOpen ? (
-        <div className="p-6 space-y-6">
+       <div className="flex-grow overflow-y-auto p-6 space-y-6 pb-48">
           <h2 className="text-2xl font-bold text-gray-800">
             {data?.sessionName}
           </h2>
           <p className="text-lg text-gray-600">{`Welcome, ${name}!`}</p>
-          <pre className="p-4 bg-gray-100 rounded-md text-gray-700">
-            {data?.details || '(Host has not provided any details yet)'}
-          </pre>
-          <div className="space-y-4">
-            {data?.cards?.map((content, i) => (
-              <UserCard key={i} userName={content ?? ''} />
-            ))}
-          </div>
-          <div className="mt-4">
-            {vote ? (
-              <Card value={vote} />
+          {data?.details && (
+          <p className="text-lg text-gray-600 italic mb-4 p-3 bg-gray-50 rounded-lg">
+            Details: {data.details}
+          </p>
+          )}
+
+          <div className="flex justify-between items-center mb-4 border-b pb-4">
+          <p className="text-lg font-medium text-gray-700">
+            Round: <span className="font-bold">{data?.round || 1}</span>
+          </p>
+
+          <div className="flex justify-center items-center">
+            {data?.countdownStartTimestamp !== null &&
+            data?.timeLimitSeconds !== undefined ? (
+              <CountdownTimer
+                durationSeconds={data.timeLimitSeconds}
+                startTimestamp={data?.countdownStartTimestamp ?? null}
+              />
             ) : (
-              <AllCards options={data?.options ?? []} chooseCard={chooseCard} />
+              <div className="text-2xl font-semibold text-gray-500 py-2">
+                Timer Stopped
+              </div>
             )}
+          </div> 
+ 
+        </div>
+
+        <div className="text-center mb-6">
+          <p
+            className={`text-xl font-bold transition-colors duration-300 ${
+              vote ? 'text-blue-600' : 'text-gray-500'
+            }`}
+          >
+            {voteStatus}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-4">
+          {data?.cards?.map((voteContent, i) => {
+              const userName = data?.userNames?.[i] || `Participant ${i + 1}`;
+              return (
+                <UserCard 
+                  key={i} 
+                  userName={userName}
+                  content={voteContent} 
+                  isRevealed={isRevealed ?? false} 
+                />
+              );
+        })}
           </div>
           <button
             className="px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"
@@ -165,6 +212,11 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
           </Dialog>
         </Transition>
       )}
-    </>
+    <CardSelector
+      selectedValue={vote || null} 
+      onSelectCard={chooseCard}  
+      options={data?.options ?? [] }
+    />
+    </div>
   )
 }
