@@ -106,9 +106,8 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
 
           <div className="text-center mb-6">
             <p
-              className={`text-xl font-bold transition-colors duration-300 ${
-                vote ? 'text-blue-600' : 'text-gray-500'
-              }`}
+              className={`text-xl font-bold transition-colors duration-300 ${vote ? 'text-blue-600' : 'text-gray-500'
+                }`}
             >
               {voteStatus}
             </p>
@@ -126,28 +125,19 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                 />
               ))
             ) : (
+              // Show vote status before reveal
               data?.hasVoted?.map((voted, i) => {
                 const userName = data?.userNames?.[i] || `Participant ${i + 1}`
                 return (
                   <UserCard
                     key={i}
-                    userName=""
-                    content={voteContent}
-                    isRevealed={true}
+                    userName={userName}
+                    content={voted ? '✓' : null}
+                    isRevealed={false}
                   />
-                ))
-              : data?.hasVoted?.map((voted, i) => {
-                  const userName =
-                    data?.userNames?.[i] || `Participant ${i + 1}`
-                  return (
-                    <UserCard
-                      key={i}
-                      userName={userName}
-                      content={voted ? '✓' : null}
-                      isRevealed={false}
-                    />
-                  )
-                })}
+                )
+              })
+            )}
           </div>
           <button
             className="px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"
