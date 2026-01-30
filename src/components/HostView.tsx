@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import confetti from 'canvas-confetti'
 import type { HostData, UserData } from '../types'
 import { useClientConnections, usePeerId } from '../utils/peerUtils'
 import { RevealButton } from './RevealButton'
@@ -52,9 +53,23 @@ export const HostView = () => {
     [userStatusList]
   )
   const userVotes = useMemo(
-    () => userStatusList.map((u) => (revealed ? u.vote : null)),
-    [userStatusList, revealed]
+    () => userStatusList.map((u) => u.vote),
+    [userStatusList]
   )
+  const hasVoted = useMemo(
+    () => userStatusList.map((u) => u.vote !== null && u.vote !== ''),
+    [userStatusList]
+  )
+
+  const shuffledVotes = useMemo(() => {
+    if (!revealed) return []
+    const votes = [...userVotes]
+    for (let i = votes.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[votes[i], votes[j]] = [votes[j], votes[i]]
+    }
+    return votes
+  }, [userVotes, revealed])
 
   useEffect(
     function autoReveal() {
@@ -69,8 +84,10 @@ export const HostView = () => {
   useEffect(
     function syncClients() {
       const hostData: HostData = {
-        cards: userVotes,
+        cards: revealed ? shuffledVotes : [],
         userNames: userNames,
+        hasVoted: hasVoted,
+        revealed: revealed,
         details,
         sessionName,
         round,
@@ -82,7 +99,7 @@ export const HostView = () => {
       sendData(hostData)
     },
     [
-      userVotes,
+      shuffledVotes,
       details,
       sessionName,
       round,
@@ -91,6 +108,8 @@ export const HostView = () => {
       timeLimitSeconds,
       countdownStartTimestamp,
       userNames,
+      hasVoted,
+      revealed,
       countdownPaused,
     ]
   )
@@ -98,6 +117,7 @@ export const HostView = () => {
   const handleTimerEnd = () => {
     setRevealed(true)
     setCountdownStartTimestamp(null)
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
   }
 
   const handleOptionsUpdate = (text: string) => {
@@ -270,21 +290,24 @@ export const HostView = () => {
         onReveal={() => {
           setRevealed(true)
           setCountdownStartTimestamp(null)
+          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
         }}
       />
 
       <div className="mt-6 flex flex-wrap justify-center gap-4 pb-32">
-        {/* List users */}
-        {userStatusList.map((user, i) => {
-          return (
-            <UserCard
-              key={i}
-              userName={user.name ?? ''}
-              content={user.vote}
-              isRevealed={revealed}
-            />
-          )
-        })}
+        {/* List users - show vote status before reveal, shuffled votes only after */}
+        {revealed
+          ? shuffledVotes.map((vote, i) => (
+              <UserCard key={i} userName="" content={vote} isRevealed={true} />
+            ))
+          : userStatusList.map((user, i) => (
+              <UserCard
+                key={i}
+                userName={user.name ?? ''}
+                content={user.vote}
+                isRevealed={false}
+              />
+            ))}
       </div>
 
       <button

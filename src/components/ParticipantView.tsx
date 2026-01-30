@@ -51,9 +51,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     [data?.options]
   )
 
-  const isRevealed = data?.cards?.some(
-    (card) => card?.length === 1 || card?.length === 2
-  )
+  const isRevealed = data?.revealed === true
 
   const voteStatus = vote
     ? isRevealed
@@ -117,17 +115,28 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-4">
-            {data?.cards?.map((voteContent, i) => {
-              const userName = data?.userNames?.[i] || `Participant ${i + 1}`
-              return (
-                <UserCard
-                  key={i}
-                  userName={userName}
-                  content={voteContent}
-                  isRevealed={isRevealed ?? false}
-                />
-              )
-            })}
+            {isRevealed
+              ? // Show shuffled votes? after reveal (no names)
+                data?.cards?.map((voteContent, i) => (
+                  <UserCard
+                    key={i}
+                    userName=""
+                    content={voteContent}
+                    isRevealed={true}
+                  />
+                ))
+              : data?.hasVoted?.map((voted, i) => {
+                  const userName =
+                    data?.userNames?.[i] || `Participant ${i + 1}`
+                  return (
+                    <UserCard
+                      key={i}
+                      userName={userName}
+                      content={voted ? '✓' : null}
+                      isRevealed={false}
+                    />
+                  )
+                })}
           </div>
           <button
             className="px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"

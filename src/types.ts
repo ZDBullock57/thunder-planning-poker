@@ -21,4 +21,8 @@ export type HostData = {
   countdownStartTimestamp?: number | null
   /** Whether the countdown timer is currently paused */
   countdownPaused?: boolean
+  /** Whether votes have been revealed */
+  revealed?: boolean
+  /** Array indicating which participants have voted (without revealing votes) */
+  hasVoted?: boolean[]
 }
