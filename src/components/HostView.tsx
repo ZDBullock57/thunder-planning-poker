@@ -11,6 +11,7 @@ import {
   CARD_DECKS,
   DECK_OPTIONS,
 } from '../utils/utils'
+import { VoteStats } from './VoteStats'
 
 
 export const HostView = () => {
@@ -18,6 +19,7 @@ export const HostView = () => {
   const [details, setDetails] = useState('')
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
+  const [autoReveal, setAutoReveal] = useState(false)
   const [deckKey, setDeckKey] = useStorage<keyof typeof CARD_DECKS>(
     'deckKey',
     DEFAULT_DECK_KEY
@@ -63,14 +65,16 @@ export const HostView = () => {
     return votes
   }, [userVotes, revealed])
 
+  // Auto-reveal when all votes are in (if enabled)
   useEffect(
-    function autoReveal() {
-      if (data.length && data.every((user) => user.vote)) {
+    function handleAutoReveal() {
+      if (autoReveal && data.length && data.every((user) => user.vote) && !revealed) {
         setRevealed(true)
         setCountdownStartTimestamp(null)
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
       }
     },
-    [data]
+    [autoReveal, data, revealed]
   )
 
   useEffect(
@@ -228,13 +232,30 @@ export const HostView = () => {
         />
       </label>
 
-      <RevealButton
-        onReveal={() => {
-          setRevealed(true)
-          setCountdownStartTimestamp(null)
-          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
-        }}
-      />
+      <div className="flex items-center gap-4 mb-4">
+        <RevealButton
+          onReveal={() => {
+            setRevealed(true)
+            setCountdownStartTimestamp(null)
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
+          }}
+        />
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={autoReveal}
+            onChange={(e) => setAutoReveal(e.target.checked)}
+            className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+          />
+          <span className="text-gray-700 font-medium">Auto-reveal when all voted</span>
+        </label>
+      </div>
+
+      {revealed && (
+        <div className="w-full flex justify-center my-6">
+          <VoteStats votes={userVotes} />
+        </div>
+      )}
 
       <div className="mt-6 flex flex-wrap justify-center gap-4 pb-32">
         {/* List users - show vote status before reveal, shuffled votes only after */}
@@ -244,7 +265,7 @@ export const HostView = () => {
           ))
         ) : (
           userStatusList.map((user, i) => (
-            <UserCard key={i} userName={user.name ?? ''} content={user.vote} isRevealed={false} />
+            <UserCard key={i} userName={user.name ?? ''} content={user.vote ? '✓' : null} isRevealed={false} />
           ))
         )}
       </div>

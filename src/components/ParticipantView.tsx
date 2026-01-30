@@ -115,7 +115,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
 
           <div className="flex flex-wrap justify-center gap-4">
             {isRevealed ? (
-              // Show shuffled votes? after reveal (no names)
+              // Show shuffled votes after reveal with no names
               data?.cards?.map((voteContent, i) => (
                 <UserCard
                   key={i}
