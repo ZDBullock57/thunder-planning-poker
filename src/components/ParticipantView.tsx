@@ -51,7 +51,6 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     [data?.options]
   )
 
-
   const isRevealed = data?.revealed === true
 
   const voteStatus = vote
@@ -89,7 +88,9 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
             </p>
 
             <div className="flex justify-center items-center">
-              {data?.countdownStartTimestamp !== null &&
+              {data?.countdownPaused ? (
+                <div>Timer Paused</div>
+              ) : data?.countdownStartTimestamp !== null &&
                 data?.timeLimitSeconds !== undefined ? (
                 <CountdownTimer
                   durationSeconds={data.timeLimitSeconds}
@@ -101,13 +102,13 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                 </div>
               )}
             </div>
-
           </div>
 
           <div className="text-center mb-6">
             <p
-              className={`text-xl font-bold transition-colors duration-300 ${vote ? 'text-blue-600' : 'text-gray-500'
-                }`}
+              className={`text-xl font-bold transition-colors duration-300 ${
+                vote ? 'text-blue-600' : 'text-gray-500'
+              }`}
             >
               {voteStatus}
             </p>
@@ -130,13 +131,23 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                 return (
                   <UserCard
                     key={i}
-                    userName={userName}
-                    content={voted ? '✓' : null}
-                    isRevealed={false}
+                    userName=""
+                    content={voteContent}
+                    isRevealed={true}
                   />
-                )
-              })
-            )}
+                ))
+              : data?.hasVoted?.map((voted, i) => {
+                  const userName =
+                    data?.userNames?.[i] || `Participant ${i + 1}`
+                  return (
+                    <UserCard
+                      key={i}
+                      userName={userName}
+                      content={voted ? '✓' : null}
+                      isRevealed={false}
+                    />
+                  )
+                })}
           </div>
           <button
             className="px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"

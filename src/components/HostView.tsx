@@ -23,20 +23,23 @@ export const HostView = () => {
   const [deckKey, setDeckKey] = useStorage<keyof typeof CARD_DECKS>(
     'deckKey',
     DEFAULT_DECK_KEY
-
   )
   const [customOptions, setCustomOptions] = useStorage<string[]>(
     'customDeckOptions',
     CARD_DECKS[DEFAULT_DECK_KEY]
   )
 
-  const [optionsInput, setOptionsInput] = useState(() => customOptions.join('\n'))
-  const [timeLimitSeconds] = useState(120)
-  const [countdownStartTimestamp, setCountdownStartTimestamp] = useState<number | null>(null)
+  const [optionsInput, setOptionsInput] = useState(() =>
+    customOptions.join('\n')
+  )
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState(120)
+  const [countdownPaused, setCountdownPaused] = useState(true)
+  const [countdownStartTimestamp, setCountdownStartTimestamp] = useState<
+    number | null
+  >(null)
 
   const peerId = usePeerId()
   const { data, sendData } = useClientConnections<UserData, HostData>()
-
 
   const options =
     deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY
@@ -44,23 +47,33 @@ export const HostView = () => {
       : CARD_DECKS[deckKey] || CARD_DECKS[DEFAULT_DECK_KEY]
 
   const userStatusList = useMemo(() => {
-    return data.filter((user): user is UserData => !!user.name)
+    return data
+      .filter((user): user is UserData => !!user.name)
       .map((user) => ({
         name: user.name ?? null,
         vote: user.vote ?? null,
       }))
   }, [data])
 
-  const userNames = useMemo(() => userStatusList.map(u => u.name), [userStatusList]);
-  const userVotes = useMemo(() => userStatusList.map(u => u.vote), [userStatusList]);
-  const hasVoted = useMemo(() => userStatusList.map(u => u.vote !== null && u.vote !== ''), [userStatusList]);
+  const userNames = useMemo(
+    () => userStatusList.map((u) => u.name),
+    [userStatusList]
+  )
+  const userVotes = useMemo(
+    () => userStatusList.map((u) => u.vote),
+    [userStatusList]
+  )
+  const hasVoted = useMemo(
+    () => userStatusList.map((u) => u.vote !== null && u.vote !== ''),
+    [userStatusList]
+  )
 
   const shuffledVotes = useMemo(() => {
     if (!revealed) return []
     const votes = [...userVotes]
     for (let i = votes.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [votes[i], votes[j]] = [votes[j], votes[i]]
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[votes[i], votes[j]] = [votes[j], votes[i]]
     }
     return votes
   }, [userVotes, revealed])
@@ -90,10 +103,24 @@ export const HostView = () => {
         options,
         timeLimitSeconds,
         countdownStartTimestamp,
+        countdownPaused,
       }
       sendData(hostData)
     },
-    [shuffledVotes, details, sessionName, round, sendData, options, timeLimitSeconds, countdownStartTimestamp, userNames, hasVoted, revealed]
+    [
+      shuffledVotes,
+      details,
+      sessionName,
+      round,
+      sendData,
+      options,
+      timeLimitSeconds,
+      countdownStartTimestamp,
+      userNames,
+      hasVoted,
+      revealed,
+      countdownPaused,
+    ]
   )
 
   const handleTimerEnd = () => {
@@ -107,8 +134,8 @@ export const HostView = () => {
 
     const newOptionsArray = text
       .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
 
     if (deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY) {
       setCustomOptions(newOptionsArray)
@@ -124,19 +151,11 @@ export const HostView = () => {
       // For built-in decks, we only update the input, not the stored custom deck
       setOptionsInput(newOptions.join('\n'))
     }
-    setRevealed(false);
-    setCountdownStartTimestamp(null);
+    setRevealed(false)
+    setCountdownStartTimestamp(null)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deckKey])
-
-  useEffect(() => {
-    // Only start the timer if a session name exists and the timer is not running
-    if (sessionName && countdownStartTimestamp === null) {
-      setCountdownStartTimestamp(Date.now())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionName])
 
   return !sessionName ? (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -171,16 +190,60 @@ export const HostView = () => {
       <h2 className="text-3xl">{sessionName}</h2>
       {/*Timer Display section */}
       <div className="flex justify-center items-center w-full">
-        {countdownStartTimestamp !== null && !revealed ? (
-          <CountdownTimer
-            durationSeconds={timeLimitSeconds}
-            startTimestamp={countdownStartTimestamp}
-            onTimerEnd={handleTimerEnd}
-          />
-        ) : (
+        {revealed && (
           <div className="text-2xl font-semibold text-green-600 py-2">
             Vote Closed
           </div>
+        )}
+        {countdownPaused ? (
+          <div className="flex gap-4 items-center">
+            <label className="flex gap-2 items-center">
+              Timer
+              <input
+                type="number"
+                min={10}
+                step={1}
+                defaultValue={timeLimitSeconds}
+                onBlur={(e) => setTimeLimitSeconds(Number(e.target.value))}
+                className="text-right w-20"
+              />{' '}
+              seconds
+            </label>
+            <button
+              className={buttonStyles}
+              onClick={() => {
+                setCountdownPaused(false)
+                setCountdownStartTimestamp(Date.now())
+              }}
+            >
+              Start ▶️
+            </button>
+          </div>
+        ) : (
+          countdownStartTimestamp !== null &&
+          !revealed && (
+            <div className="flex gap-4 items-center">
+              <CountdownTimer
+                durationSeconds={timeLimitSeconds}
+                startTimestamp={countdownStartTimestamp}
+                onTimerEnd={handleTimerEnd}
+              />
+              <button
+                className={buttonStyles}
+                onClick={() => {
+                  setCountdownPaused(true)
+                  setTimeLimitSeconds((prev) => {
+                    const now = Date.now()
+                    const elapsed = now - (countdownStartTimestamp ?? 0)
+                    const remaining = Math.max(0, prev * 1000 - elapsed)
+                    return Math.ceil(remaining / 1000)
+                  })
+                }}
+              >
+                Pause ⏸️
+              </button>
+            </div>
+          )
         )}
       </div>
       <CopyButton
@@ -188,7 +251,7 @@ export const HostView = () => {
       >
         Copy join link 📋
       </CopyButton>
-      <div className='w-full'>
+      <div className="w-full">
         <label className="block text-gray-700 text-sm font-bold w-full">
           Voting options (one per line)
           <select
@@ -275,7 +338,8 @@ export const HostView = () => {
         onClick={() => {
           setRevealed(false)
           setRound((prev) => prev + 1)
-          setCountdownStartTimestamp(Date.now())
+          setCountdownPaused(true)
+          setTimeLimitSeconds(120)
         }}
       >
         Start new pointing round - we found the lamb sauce
@@ -301,7 +365,9 @@ function CopyButton({
         setTimeout(() => setShowCopied(false), 2000)
       }}
     >
-      {showCopied ? 'Copied!' : children ?? 'Copy'}
+      {showCopied ? 'Copied!' : (children ?? 'Copy')}
     </button>
   )
 }
+
+const buttonStyles = `bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600`
