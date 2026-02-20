@@ -61,8 +61,8 @@ const usePeer = (options: PeerOptions = {}) => {
     let peerInstance: Peer | null = null
 
     const initPeer = async () => {
-      const iceServers = await getIceServers()
       if (destroyed) return
+      const iceServers = await getIceServers()
 
       const peerOptions: PeerOptions = {
         ...options,
