@@ -129,5 +129,9 @@ export const useClientConnections = <T, K>() => {
     return records
   }, [connectionDataMap])
 
-  return { data, sendData }
+  const connections = useMemo(() => {
+    return Array.from(connectionDataMap.keys())
+  }, [connectionDataMap])
+
+  return { data, sendData, connections }
 }
