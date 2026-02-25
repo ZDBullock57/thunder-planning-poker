@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
@@ -89,13 +90,16 @@ export const useClientConnections = <T, K>() => {
     Map<DataConnection, T>
   >(new Map())
 
+  const connectionDataMapRef = useRef(connectionDataMap)
+  connectionDataMapRef.current = connectionDataMap
+
   const sendData = useCallback(
     (data: K) => {
-      connectionDataMap.forEach((_, connection) => {
+      connectionDataMapRef.current.forEach((_, connection) => {
         connection.send(data)
       })
     },
-    [connectionDataMap]
+    []
   )
 
   useEffect(() => {
@@ -129,9 +133,5 @@ export const useClientConnections = <T, K>() => {
     return records
   }, [connectionDataMap])
 
-  const connections = useMemo(() => {
-    return Array.from(connectionDataMap.keys())
-  }, [connectionDataMap])
-
-  return { data, sendData, connections }
+  return { data, sendData }
 }

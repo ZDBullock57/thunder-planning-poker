@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import confetti from 'canvas-confetti'
 import type { HostData, UserData } from '../types'
 import { useClientConnections, usePeerId } from '../utils/peerUtils'
@@ -39,7 +39,7 @@ export const HostView = () => {
   >(null)
 
   const peerId = usePeerId()
-  const { data, connections } = useClientConnections<UserData, HostData>()
+  const { data, sendData } = useClientConnections<UserData, HostData>()
 
   const options =
     deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY
@@ -90,77 +90,41 @@ export const HostView = () => {
     [autoReveal, data, revealed]
   )
 
-  const initializedConnectionsRef = useRef<WeakSet<any>>(new WeakSet())
-  const lastSentDataRef = useRef<HostData | null>(null)
-
+  // Sync host-owned data: only fires when the host makes a change
   useEffect(
-    function syncClients() {
-      const hostData: HostData = {
-        cards: revealed ? shuffledVotes : [],
-        userNames: userNames,
-        hasVoted: hasVoted,
-        revealed: revealed,
-        details,
+    function syncHostData() {
+      sendData({
         sessionName,
+        details,
         round,
         options,
         timeLimitSeconds,
         countdownStartTimestamp,
         countdownPaused,
-      }
-
-      // Send full state to newly joined connections
-      const newConns = connections.filter(
-        (conn) => !initializedConnectionsRef.current.has(conn)
-      )
-      for (const conn of newConns) {
-        conn.send(hostData)
-        initializedConnectionsRef.current.add(conn)
-      }
-
-      // Calculate diff against last broadcast for existing connections
-      const lastData = lastSentDataRef.current
-      const diff: Partial<HostData> = {}
-      let hasChanges = false
-
-      if (!lastData) {
-        Object.assign(diff, hostData)
-        hasChanges = true
-      } else {
-        for (const key in hostData) {
-          const k = key as keyof HostData
-          if (JSON.stringify(hostData[k]) !== JSON.stringify(lastData[k])) {
-            ; (diff as any)[k] = hostData[k]
-            hasChanges = true
-          }
-        }
-      }
-
-      if (hasChanges) {
-        // Only send diff to already-initialized connections
-        const existingConns = connections.filter(
-          (conn) => !newConns.includes(conn)
-        )
-        for (const conn of existingConns) {
-          conn.send(diff)
-        }
-        lastSentDataRef.current = { ...hostData }
-      }
+        revealed,
+        cards: revealed ? shuffledVotes : [],
+      })
     },
     [
-      shuffledVotes,
-      details,
+      sendData,
       sessionName,
+      details,
       round,
       options,
       timeLimitSeconds,
       countdownStartTimestamp,
-      userNames,
-      hasVoted,
-      revealed,
       countdownPaused,
-      connections,
+      revealed,
+      shuffledVotes,
     ]
+  )
+
+  // Sync user-derived data: only fires when participant data changes
+  useEffect(
+    function syncUserData() {
+      sendData({ userNames, hasVoted })
+    },
+    [sendData, userNames, hasVoted]
   )
 
   const handleTimerEnd = () => {
