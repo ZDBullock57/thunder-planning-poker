@@ -58,11 +58,14 @@ export const useHostConnection = <T, K>(joinId: string) => {
   const [connection, setConnection] = useState<DataConnection>()
   const [data, setData] = useState<T | null>(null)
 
+  const connectionRef = useRef(connection)
+  connectionRef.current = connection
+
   const sendData = useCallback(
     (data: K) => {
-      connection?.send(data)
+      connectionRef.current?.send(data)
     },
-    [connection]
+    []
   )
 
   useEffect(() => {
