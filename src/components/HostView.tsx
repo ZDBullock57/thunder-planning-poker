@@ -73,7 +73,7 @@ export const HostView = () => {
     const votes = [...userVotes]
     for (let i = votes.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      ;[votes[i], votes[j]] = [votes[j], votes[i]]
+        ;[votes[i], votes[j]] = [votes[j], votes[i]]
     }
     return votes
   }, [userVotes, revealed])
@@ -90,37 +90,41 @@ export const HostView = () => {
     [autoReveal, data, revealed]
   )
 
+  // Sync host-owned data: only fires when the host makes a change
   useEffect(
-    function syncClients() {
-      const hostData: HostData = {
-        cards: revealed ? shuffledVotes : [],
-        userNames: userNames,
-        hasVoted: hasVoted,
-        revealed: revealed,
-        details,
+    function syncHostData() {
+      sendData({
         sessionName,
+        details,
         round,
         options,
         timeLimitSeconds,
         countdownStartTimestamp,
         countdownPaused,
-      }
-      sendData(hostData)
+        revealed,
+        cards: revealed ? shuffledVotes : [],
+      })
     },
     [
-      shuffledVotes,
-      details,
-      sessionName,
-      round,
       sendData,
+      sessionName,
+      details,
+      round,
       options,
       timeLimitSeconds,
       countdownStartTimestamp,
-      userNames,
-      hasVoted,
-      revealed,
       countdownPaused,
+      revealed,
+      shuffledVotes,
     ]
+  )
+
+  // Sync user-derived data: only fires when participant data changes
+  useEffect(
+    function syncUserData() {
+      sendData({ userNames, hasVoted })
+    },
+    [sendData, userNames, hasVoted]
   )
 
   const handleTimerEnd = () => {
@@ -278,7 +282,8 @@ export const HostView = () => {
           <textarea
             className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"
             value={optionsInput}
-            onChange={(e) => handleOptionsUpdate(e.target.value)}
+            onChange={(e) => setOptionsInput(e.target.value)}
+            onBlur={(e) => handleOptionsUpdate(e.target.value)}
             rows={5}
             placeholder="e.g. 1, 2, 3, 5, 8, 13, 20, ?"
           />
