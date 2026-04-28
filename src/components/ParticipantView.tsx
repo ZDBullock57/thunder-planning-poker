@@ -5,26 +5,70 @@ import {
   Transition,
   TransitionChild,
 } from '@headlessui/react'
-import { Fragment, useEffect, useState } from 'react'
-import type { HostData, UserData } from '../types'
-import { useHostConnection } from '../utils/peerUtils'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { CatThrowEvent, HostData, UserData } from '../types'
+import { useHostConnection, DEBUG_MODE } from '../utils/peerUtils'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { CountdownTimer } from './CountdownTimer'
 import { CardSelector } from './CardSelector'
+import { LinkifiedText } from './LinkifiedText'
+import { VoteStats } from './VoteStats'
+import { CatThrowManager } from './CatThrow'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useStorage('name', '')
   const [vote, setVote] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(true)
+  const [debugRevealed, setDebugRevealed] = useState(false)
+
+  // Cat throw state
+  const [catThrowEvents, setCatThrowEvents] = useState<CatThrowEvent[]>([])
+  const processedCatThrows = useRef<Set<string>>(new Set())
+  const cardRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
 
   const { data, sendData, connected } = useHostConnection<HostData, UserData>(
     joinId
   )
 
+  // Watch for incoming cat throws from host
+  useEffect(() => {
+    if (data?.catThrow) {
+      const event = data.catThrow
+      if (!processedCatThrows.current.has(event.id)) {
+        processedCatThrows.current.add(event.id)
+        setCatThrowEvents(prev => [...prev, event])
+      }
+    }
+  }, [data?.catThrow])
+
+  // Function to throw a cat (participant)
+  const throwCat = useCallback((targetName: string) => {
+    const event: CatThrowEvent = {
+      id: `${name}-${Date.now()}-${Math.random()}`,
+      targetName,
+      fromName: name,
+      timestamp: Date.now(),
+    }
+    processedCatThrows.current.add(event.id)
+    setCatThrowEvents(prev => [...prev, event])
+    sendData({ catThrow: event })
+  }, [name, sendData])
+
+  // Get ref for a target by name
+  const getTargetRef = useCallback((targetName: string) => {
+    const element = cardRefs.current.get(targetName)
+    return element ? { current: element } : null
+  }, [])
+
+  // Remove completed cat throw event
+  const handleCatThrowComplete = useCallback((id: string) => {
+    setCatThrowEvents(prev => prev.filter(e => e.id !== id))
+  }, [])
+
   useEffect(
     function updateTitle() {
-      window.document.title = data?.sessionName || "Where's the Lamb Sauce?"
+      window.document.title = data?.sessionName || "Pointing Poker"
     },
     [data?.sessionName]
   )
@@ -51,7 +95,16 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     [data?.options]
   )
 
-  const isRevealed = data?.revealed === true
+  const isRevealed = data?.revealed === true || (DEBUG_MODE && debugRevealed)
+
+  // Combine host's cards with participant's own vote for display
+  const allVotes = useMemo(() => {
+    const hostCards = data?.cards || []
+    if (vote && !hostCards.includes(vote)) {
+      return [...hostCards, vote]
+    }
+    return hostCards
+  }, [data?.cards, vote])
 
   const voteStatus = vote
     ? isRevealed
@@ -61,35 +114,40 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
 
   if (!connected) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-lg font-medium text-gray-700">
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <p className="text-lg font-medium text-slate-300">
           Connecting to host...
         </p>
       </div>
     )
   }
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-900">
+      {/* Header */}
+      <h1 className="text-3xl font-black text-center py-3 tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex-shrink-0">
+        Pointing Poker{data?.sessionName && ` — ${data.sessionName}`}
+      </h1>
+      
       {!isModalOpen ? (
-        <div className="flex-grow overflow-y-auto p-6 space-y-6 pb-48">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {data?.sessionName}
-          </h2>
-          <p className="text-lg text-gray-600">{`Welcome, ${name}!`}</p>
+        <div className="flex-grow overflow-y-auto p-4 space-y-4 pb-36">
+          <div className="flex items-center justify-end">
+            <p className="text-sm text-slate-400">{`Welcome, ${name}!`}</p>
+          </div>
           {data?.details && (
-            <p className="text-lg text-gray-600 italic mb-4 p-3 bg-gray-50 rounded-lg">
-              Details: {data.details}
-            </p>
+            <div className="text-sm text-slate-300 p-3 bg-slate-800 rounded-lg border border-slate-700">
+              <span className="text-slate-400">Details: </span>
+              <LinkifiedText text={data.details} />
+            </div>
           )}
 
-          <div className="flex justify-between items-center mb-4 border-b pb-4">
-            <p className="text-lg font-medium text-gray-700">
-              Round: <span className="font-bold">{data?.round || 1}</span>
+          <div className="flex justify-between items-center pb-3 border-b border-slate-700">
+            <p className="text-sm font-medium text-slate-300">
+              Round: <span className="font-bold text-white">{data?.round || 1}</span>
             </p>
 
             <div className="flex justify-center items-center">
               {data?.countdownPaused ? (
-                <div>Timer Paused</div>
+                <div className="text-slate-400 text-sm">Timer Paused</div>
               ) : data?.countdownStartTimestamp !== null &&
                 data?.timeLimitSeconds !== undefined ? (
                 <CountdownTimer
@@ -97,26 +155,33 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                   startTimestamp={data?.countdownStartTimestamp ?? null}
                 />
               ) : (
-                <div className="text-2xl font-semibold text-gray-500 py-2">
+                <div className="text-lg font-semibold text-slate-500">
                   Timer Stopped
                 </div>
               )}
             </div>
           </div>
 
-          <div className="text-center mb-6">
+          <div className="text-center mb-4">
             <p
-              className={`text-xl font-bold transition-colors duration-300 ${vote ? 'text-blue-600' : 'text-gray-500'
+              className={`text-lg font-bold transition-colors duration-300 ${vote ? 'text-indigo-400' : 'text-slate-500'
                 }`}
             >
               {voteStatus}
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4">
+          {/* Vote Summary when revealed */}
+          {isRevealed && allVotes.length > 0 && data?.options && (
+            <div className="flex justify-center mb-4">
+              <VoteStats votes={allVotes} options={data.options} />
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-center gap-3">
             {isRevealed ? (
               // Show shuffled votes after reveal with no names
-              data?.cards?.map((voteContent, i) => (
+              allVotes.map((voteContent, i) => (
                 <UserCard
                   key={i}
                   userName=""
@@ -131,20 +196,43 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                 return (
                   <UserCard
                     key={i}
+                    ref={(el) => { cardRefs.current.set(userName, el) }}
                     userName={userName}
-                    content={voted ? '✓' : null}
+                    content={voted ? 'voted' : null}
                     isRevealed={false}
+                    onClick={!voted ? () => throwCat(userName) : undefined}
                   />
                 )
               })
             )}
           </div>
-          <button
-            className="px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"
-            onClick={() => chooseCard('')}
-          >
-            Clear choice
-          </button>
+          <div className="flex gap-2 mt-4">
+            <button
+              className="px-4 py-2 text-white bg-rose-600 rounded-lg hover:bg-rose-500 transition-colors text-sm font-medium"
+              onClick={() => chooseCard('')}
+            >
+              Clear choice
+            </button>
+            {DEBUG_MODE && (
+              <button
+                className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                  debugRevealed
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                    : 'bg-slate-600 text-white hover:bg-slate-500'
+                }`}
+                onClick={() => setDebugRevealed(!debugRevealed)}
+              >
+                {debugRevealed ? 'Hide Reveal' : 'Preview Reveal'}
+              </button>
+            )}
+          </div>
+
+          {/* Cat throw animations */}
+          <CatThrowManager
+            events={catThrowEvents}
+            getTargetRef={getTargetRef}
+            onEventComplete={handleCatThrowComplete}
+          />
         </div>
       ) : (
         <Transition appear show={isModalOpen} as={Fragment}>
@@ -176,10 +264,10 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <DialogPanel className="w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                  <DialogPanel className="w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-slate-800 shadow-xl rounded-2xl border border-slate-700">
                     <DialogTitle
                       as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
+                      className="text-lg font-medium leading-6 text-white"
                     >
                       Enter your name
                     </DialogTitle>
@@ -195,13 +283,13 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                         setIsModalOpen(false)
                       }}
                     >
-                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                      <label className="block mb-2 text-sm font-medium text-slate-300">
                         Name:
                         <input
                           type="text"
                           id="name"
                           name="name"
-                          className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="block w-full px-3 py-2 mt-1 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           required
                           defaultValue={name}
                         />
@@ -209,7 +297,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
                       <div className="mt-4">
                         <button
                           type="submit"
-                          className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                          className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors"
                         >
                           Submit
                         </button>
