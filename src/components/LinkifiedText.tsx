@@ -16,7 +16,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, className })
   const parts = text.split(urlPattern)
   
   return (
-    <span className={className}>
+    <span className={`whitespace-pre-wrap ${className ?? ''}`}>
       {parts.map((part, index) => {
         if (urlPattern.test(part)) {
           // Reset the lastIndex since we're reusing the regex

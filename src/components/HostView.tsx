@@ -23,6 +23,7 @@ export const HostView = () => {
   const [round, setRound] = useState(1)
   const [revealed, setRevealed] = useState(false)
   const [autoReveal, setAutoReveal] = useState(false)
+  const lastRevealedRound = useRef(0) // Track which round we last revealed
   const [deckKey, setDeckKey] = useStorage<keyof typeof CARD_DECKS>(
     'deckKey',
     DEFAULT_DECK_KEY
@@ -132,13 +133,17 @@ export const HostView = () => {
   // Auto-reveal when all votes are in (if enabled)
   useEffect(
     function handleAutoReveal() {
+      // Skip if we already revealed this round (prevents re-trigger when starting new round)
+      if (lastRevealedRound.current === round) return
+      
       if (autoReveal && data.length && data.every((user) => user.vote) && !revealed) {
+        lastRevealedRound.current = round
         setRevealed(true)
         setCountdownStartTimestamp(null)
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
       }
     },
-    [autoReveal, data, revealed]
+    [autoReveal, data, revealed, round]
   )
 
   // Sync host-owned data: only fires when the host makes a change
@@ -179,6 +184,7 @@ export const HostView = () => {
   )
 
   const handleTimerEnd = () => {
+    lastRevealedRound.current = round
     setRevealed(true)
     setCountdownStartTimestamp(null)
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
@@ -256,7 +262,7 @@ export const HostView = () => {
             <CopyButton
               text={new URL(window.location.href + '?join_id=' + peerId).href}
             >
-              <span className="flex items-center gap-1.5">Copy join link <CopyIcon size={12} /></span>
+              <span className="flex items-center justify-center gap-1.5">Copy join link <CopyIcon size={12} /></span>
             </CopyButton>
           </div>
 
@@ -365,6 +371,7 @@ export const HostView = () => {
             <button
               className="flex-1 bg-indigo-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-indigo-500 transition-colors text-sm"
               onClick={() => {
+                lastRevealedRound.current = round
                 setRevealed(true)
                 setCountdownStartTimestamp(null)
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
