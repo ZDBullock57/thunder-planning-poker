@@ -1,6 +1,15 @@
+export type CatThrowEvent = {
+  id: string
+  targetName: string
+  fromName: string
+  timestamp: number
+}
+
 export type UserData = {
   name?: string
   vote?: string | null
+  /** Cat throw event from participant to be broadcast */
+  catThrow?: CatThrowEvent
 }
 
 export type HostData = {
@@ -25,4 +34,6 @@ export type HostData = {
   revealed?: boolean
   /** Array indicating which participants have voted (without revealing votes) */
   hasVoted?: boolean[]
+  /** Cat throw event to be displayed by all clients */
+  catThrow?: CatThrowEvent
 }

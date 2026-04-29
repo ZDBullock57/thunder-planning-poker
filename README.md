@@ -1,21 +1,53 @@
-# Miro
+# Pointing Poker 🐱
+
+A real-time planning poker app for agile teams. Host a session, share a link, and estimate together.
+
+## Features
+
+- **Real-time sync** via WebRTC (PeerJS) — no server needed for voting
+- **Multiple card decks** — Fibonacci, T-shirt sizes, or custom
+- **Auto-reveal** — automatically show votes when everyone's in
+- **Countdown timer** — keep estimation sessions on track
+- **Vote stats** — pie chart breakdown + recommended estimate
+- **ClickUp links** — paste ticket URLs and they become clickable
+- **Throw cats** — click non-voters to hurl animated cats at them
+
+## Quick Start
+
+```bash
+npm install
+
+# Start local PeerJS server (required for WebRTC signaling)
+npm run serve
+
+# In another terminal, start the app
+npm start
+```
+
+Open http://localhost:5173, create a session, and share the join link.
+
+## Debug Mode
+
+Test without real participants:
+
+```bash
+npm run start:debug:host        # Host view with mock participants
+npm run start:debug:participant # Participant view with mock host
+```
+
+## Tech Stack
+
+React 19 • TypeScript • Vite • Tailwind CSS • PeerJS • Framer Motion
+
+---
+
+## Additional Info
+
+### Miro
 
 Miro board Thunder TEAM here https://miro.com/app/board/uXjVJq8ddWU=/
 
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
+### Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
@@ -75,4 +107,3 @@ export default defineConfig([
   },
 ])
 ```
-# thunder-planning-poker
