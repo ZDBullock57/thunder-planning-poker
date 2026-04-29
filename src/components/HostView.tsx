@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
 import type { CatThrowEvent, HostData, UserData } from '../types'
 import { useClientConnections, usePeerId } from '../utils/peerUtils'
-import { RevealButton } from './RevealButton'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { CountdownTimer } from './CountdownTimer'
@@ -498,5 +497,3 @@ function CopyButton({
     </button>
   )
 }
-
-const buttonStyles = `bg-indigo-600 text-white py-1.5 px-4 rounded-lg hover:bg-indigo-500 transition-colors text-sm font-medium`
