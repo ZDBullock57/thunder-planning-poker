@@ -3,26 +3,26 @@ import { Label, Radio, RadioGroup } from '@headlessui/react'
 import { CheckIcon } from 'lucide-react'
 
 const themeColors = {
-  selected: 'bg-indigo-600 text-white ring-indigo-400 ring-4',
-  hover: 'hover:bg-slate-700',
-  focus: 'focus:ring-indigo-500',
-  base: 'bg-slate-800 text-slate-100 border-slate-600',
+  selected: 'bg-blue-600 text-white ring-blue-500 ring-4',
+  hover: 'hover:bg-blue-100',
+  focus: 'focus:ring-blue-500',
+  base: 'bg-white text-gray-900 border-gray-200',
 }
 
 const CARD_DECK_CONTAINER_CLASSES = `
-  fixed bottom-0 left-0 p-3
-  bg-slate-900/95 backdrop-blur-sm
-  border-t border-slate-700
+  fixed bottom-0 left-0 p-4
+  bg-gray-900/80 backdrop-blur-sm
+  border-t border-gray-700 shadow-2xl-top
   w-full
   flex flex-nowrap overflow-x-auto
   items-center
-  scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900
+  scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900
 `
 
 const CARD_OPTION_BASE_CLASSES = `
-  relative flex-shrink-0 w-20 h-28 rounded-xl border-2 
+  relative flex-shrink-0 w-24 h-36 rounded-xl border-2 
   transition-all duration-150 ease-in-out transform
-  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900
+  focus:outline-none focus:ring-2 focus:ring-offset-2
   shadow-lg hover:shadow-xl hover:-translate-y-1
 `
 

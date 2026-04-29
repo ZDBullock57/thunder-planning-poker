@@ -3,7 +3,7 @@ import { Fragment } from 'react'
 
 export const Card = ({ value }: { value: string }) => {
   return (
-    <div className="flex items-center justify-center w-16 h-24 bg-slate-800 border border-slate-600 rounded-lg shadow-md text-white font-bold">
+    <div className="flex items-center justify-center w-16 h-24 bg-gray-100 border border-gray-300 rounded shadow-md">
       {value}
     </div>
   )

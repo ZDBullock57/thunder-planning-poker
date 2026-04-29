@@ -60,11 +60,11 @@ export const CountdownTimer = ({durationSeconds, startTimestamp, onTimerEnd}: Co
         .toString()
         .padStart(2, '0')}`
 
-    const timerClass = timeRemaining <= 10 && timeRemaining>0 ? 'text-rose-400 font-extrabold animate-pulse' : timeRemaining<=30 && timeRemaining> 0 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-semibold'
+    const timerClass = timeRemaining <= 10 && timeRemaining>0 ? 'text-red-500 font-extrabold animate-pulse' : timeRemaining<=30 && timeRemaining> 0 ? 'text-yellow-600 font-bold' : 'text-green-700 font-semibold'
 
     return (
         <div
-          className={`text-xl tracking-wider transition-colors duration-300 ${timerClass}`}
+          className={`text-2xl tracking-wider py-2 transition-colors duration-300 ${timerClass}`}
         >
           {formattedTime}
         </div>
