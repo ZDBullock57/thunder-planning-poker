@@ -5,16 +5,11 @@ import { useClientConnections, usePeerId } from '../utils/peerUtils'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { CountdownTimer } from './CountdownTimer'
-import {
-  DEFAULT_DECK_KEY,
-  CARD_DECKS,
-  DECK_OPTIONS,
-} from '../utils/utils'
+import { DEFAULT_DECK_KEY, CARD_DECKS, DECK_OPTIONS } from '../utils/utils'
 import { VoteStats } from './VoteStats'
 import { LinkifiedText } from './LinkifiedText'
 import { ClockIcon, PlayIcon, PauseIcon, CheckIcon, CopyIcon } from './Icons'
 import { CatThrowManager } from './CatThrow'
-
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
@@ -48,10 +43,11 @@ export const HostView = () => {
   const cardRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
 
   // Compute options before using in hook
-  const options = useMemo(() =>
-    deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY
-      ? customOptions
-      : CARD_DECKS[deckKey] || CARD_DECKS[DEFAULT_DECK_KEY],
+  const options = useMemo(
+    () =>
+      deckKey === DECK_OPTIONS.CUSTOM_DECK_KEY
+        ? customOptions
+        : CARD_DECKS[deckKey] || CARD_DECKS[DEFAULT_DECK_KEY],
     [deckKey, customOptions]
   )
 
@@ -67,24 +63,27 @@ export const HostView = () => {
         if (processedCatThrows.current.has(event.id)) return
         processedCatThrows.current.add(event.id)
         // Add to local events and broadcast
-        setCatThrowEvents(prev => [...prev, event])
+        setCatThrowEvents((prev) => [...prev, event])
         sendData({ catThrow: event })
       }
     })
   }, [data, sendData])
 
   // Function to throw a cat (host)
-  const throwCat = useCallback((targetName: string) => {
-    const event: CatThrowEvent = {
-      id: `host-${Date.now()}-${Math.random()}`,
-      targetName,
-      fromName: 'Host',
-      timestamp: Date.now(),
-    }
-    processedCatThrows.current.add(event.id)
-    setCatThrowEvents(prev => [...prev, event])
-    sendData({ catThrow: event })
-  }, [sendData])
+  const throwCat = useCallback(
+    (targetName: string) => {
+      const event: CatThrowEvent = {
+        id: `host-${Date.now()}-${Math.random()}`,
+        targetName,
+        fromName: 'Host',
+        timestamp: Date.now(),
+      }
+      processedCatThrows.current.add(event.id)
+      setCatThrowEvents((prev) => [...prev, event])
+      sendData({ catThrow: event })
+    },
+    [sendData]
+  )
 
   // Get ref for a target by name
   const getTargetRef = useCallback((name: string) => {
@@ -94,7 +93,7 @@ export const HostView = () => {
 
   // Remove completed cat throw event
   const handleCatThrowComplete = useCallback((id: string) => {
-    setCatThrowEvents(prev => prev.filter(e => e.id !== id))
+    setCatThrowEvents((prev) => prev.filter((e) => e.id !== id))
   }, [])
 
   const userStatusList = useMemo(() => {
@@ -124,7 +123,7 @@ export const HostView = () => {
     const votes = [...userVotes]
     for (let i = votes.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-        ;[votes[i], votes[j]] = [votes[j], votes[i]]
+      ;[votes[i], votes[j]] = [votes[j], votes[i]]
     }
     return votes
   }, [userVotes, revealed])
@@ -134,8 +133,13 @@ export const HostView = () => {
     function handleAutoReveal() {
       // Skip if we already revealed this round (prevents re-trigger when starting new round)
       if (lastRevealedRound.current === round) return
-      
-      if (autoReveal && data.length && data.every((user) => user.vote) && !revealed) {
+
+      if (
+        autoReveal &&
+        data.length &&
+        data.every((user) => user.vote) &&
+        !revealed
+      ) {
         lastRevealedRound.current = round
         setRevealed(true)
         setCountdownStartTimestamp(null)
@@ -251,219 +255,243 @@ export const HostView = () => {
       <h1 className="text-3xl font-black text-center py-3 tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
         Pointing Poker{sessionName && ` — ${sessionName}`}
       </h1>
-      
+
       <div className="flex-1 flex gap-4 min-h-0">
         {/* Left Sidebar - Settings */}
         <div className="w-64 flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Host Controls</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Host Controls
+          </h2>
           {/* Session info */}
           <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
             <CopyButton
               text={new URL(window.location.href + '?join_id=' + peerId).href}
             >
-              <span className="flex items-center justify-center gap-1.5">Copy join link <CopyIcon size={12} /></span>
+              <span className="flex items-center justify-center gap-1.5">
+                Copy join link <CopyIcon size={12} />
+              </span>
             </CopyButton>
           </div>
 
-        {/* Deck Settings */}
-        <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 flex flex-col gap-2">
-          <button
-            type="button"
-            className="flex items-center justify-between text-slate-300 text-xs font-medium uppercase tracking-wide"
-            onClick={() => setDeckExpanded(!deckExpanded)}
-          >
-            <span>Deck</span>
-            <span className="text-slate-500 text-xs normal-case">{deckExpanded ? 'Hide' : 'Edit'}</span>
-          </button>
-          <select
-            className="w-full px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            value={deckKey}
-            onChange={(e) => {
-              const newKey = e.target.value as keyof typeof CARD_DECKS
-              setDeckKey(newKey)
-              setRevealed(false)
-              setCountdownStartTimestamp(null)
-            }}
-          >
-            {Object.entries(DECK_OPTIONS).map(([key, value]) => (
-              <option key={key} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-          {deckExpanded && (
-            <textarea
-              className="w-full px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={optionsInput}
-              onChange={(e) => setOptionsInput(e.target.value)}
-              onBlur={(e) => handleOptionsUpdate(e.target.value)}
-              rows={5}
-              placeholder="Values..."
-            />
-          )}
-        </div>
+          {/* Deck Settings */}
+          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 flex flex-col gap-2">
+            <button
+              type="button"
+              className="flex items-center justify-between text-slate-300 text-xs font-medium uppercase tracking-wide"
+              onClick={() => setDeckExpanded(!deckExpanded)}
+            >
+              <span>Deck</span>
+              <span className="text-slate-500 text-xs normal-case">
+                {deckExpanded ? 'Hide' : 'Edit'}
+              </span>
+            </button>
+            <select
+              className="w-full px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={deckKey}
+              onChange={(e) => {
+                const newKey = e.target.value as keyof typeof CARD_DECKS
+                setDeckKey(newKey)
+                setRevealed(false)
+                setCountdownStartTimestamp(null)
+              }}
+            >
+              {Object.entries(DECK_OPTIONS).map(([key, value]) => (
+                <option key={key} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            {deckExpanded && (
+              <textarea
+                className="w-full px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={optionsInput}
+                onChange={(e) => setOptionsInput(e.target.value)}
+                onBlur={(e) => handleOptionsUpdate(e.target.value)}
+                rows={5}
+                placeholder="Values..."
+              />
+            )}
+          </div>
 
-        {/* Voting Controls */}
-        <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 flex flex-col gap-2">
-          {/* Vote Progress */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-400">
-              {revealed ? (
-                <span className="text-emerald-400 font-medium flex items-center gap-1"><CheckIcon size={12} /> Revealed</span>
-              ) : (
-                `${userStatusList.filter(u => u.vote).length}/${userStatusList.length} voted`
-              )}
-            </span>
-            {/* Timer inline */}
-            {countdownPaused ? (
-              <div className="flex items-center gap-1">
-                <ClockIcon className="text-slate-500" size={12} />
-                <input
-                  type="number"
-                  min={10}
-                  step={1}
-                  defaultValue={timeLimitSeconds}
-                  onBlur={(e) => setTimeLimitSeconds(Number(e.target.value))}
-                  className="w-12 text-center px-1 py-0.5 bg-slate-700 border border-slate-600 rounded text-white text-xs"
-                />
-                <span className="text-slate-500 text-xs">s</span>
-                <button
-                  className="px-2 py-1 bg-slate-600 text-white rounded hover:bg-slate-500 flex items-center justify-center"
-                  onClick={() => {
-                    setCountdownPaused(false)
-                    setCountdownStartTimestamp(Date.now())
-                  }}
-                >
-                  <PlayIcon size={10} />
-                </button>
-              </div>
-            ) : (
-              countdownStartTimestamp !== null && !revealed && (
-                <div className="flex items-center gap-2">
+          {/* Voting Controls */}
+          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 flex flex-col gap-2">
+            {/* Vote Progress */}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-slate-400">
+                {revealed ? (
+                  <span className="text-emerald-400 font-medium flex items-center gap-1">
+                    <CheckIcon size={12} /> Revealed
+                  </span>
+                ) : (
+                  `${userStatusList.filter((u) => u.vote).length}/${userStatusList.length} voted`
+                )}
+              </span>
+              {/* Timer inline */}
+              {countdownPaused ? (
+                <div className="flex items-center gap-1">
                   <ClockIcon className="text-slate-500" size={12} />
-                  <CountdownTimer
-                    durationSeconds={timeLimitSeconds}
-                    startTimestamp={countdownStartTimestamp}
-                    onTimerEnd={handleTimerEnd}
+                  <input
+                    type="number"
+                    min={10}
+                    step={1}
+                    defaultValue={timeLimitSeconds}
+                    onBlur={(e) => setTimeLimitSeconds(Number(e.target.value))}
+                    className="w-12 text-center px-1 py-0.5 bg-slate-700 border border-slate-600 rounded text-white text-xs"
                   />
+                  <span className="text-slate-500 text-xs">s</span>
                   <button
                     className="px-2 py-1 bg-slate-600 text-white rounded hover:bg-slate-500 flex items-center justify-center"
                     onClick={() => {
-                      setCountdownPaused(true)
-                      setTimeLimitSeconds((prev) => {
-                        const now = Date.now()
-                        const elapsed = now - (countdownStartTimestamp ?? 0)
-                        const remaining = Math.max(0, prev * 1000 - elapsed)
-                        return Math.ceil(remaining / 1000)
-                      })
+                      setCountdownPaused(false)
+                      setCountdownStartTimestamp(Date.now())
                     }}
                   >
-                    <PauseIcon size={10} />
+                    <PlayIcon size={10} />
                   </button>
                 </div>
-              )
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <button
-              className="flex-1 bg-indigo-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-indigo-500 transition-colors text-sm"
-              onClick={() => {
-                lastRevealedRound.current = round
-                setRevealed(true)
-                setCountdownStartTimestamp(null)
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
-              }}
-            >
-              Reveal
-            </button>
-            <button
-              className="flex-1 bg-emerald-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-emerald-500 transition-colors text-sm"
-              onClick={() => {
-                setRevealed(false)
-                setRound((prev) => prev + 1)
-                setCountdownPaused(true)
-                setTimeLimitSeconds(120)
-              }}
-            >
-              New Round
-            </button>
-          </div>
-
-          {/* Auto-reveal */}
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
-            <input
-              type="checkbox"
-              checked={autoReveal}
-              onChange={(e) => setAutoReveal(e.target.checked)}
-              className="w-3 h-3 text-indigo-600 bg-slate-700 border-slate-500 rounded focus:ring-indigo-500"
-            />
-            Auto-reveal when all voted
-          </label>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col gap-3 min-w-0">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Session</h2>
-        {/* Details card */}
-        <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
-          <label className="block text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">
-            Details
-          </label>
-          <textarea
-            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            rows={2}
-            placeholder="Paste ticket link or description..."
-            defaultValue={details}
-            onBlur={(e) => setDetails(e.target.value)}
-          />
-          {details && (
-            <div className="mt-2 text-sm text-slate-300">
-              <LinkifiedText text={details} />
-            </div>
-          )}
-        </div>
-
-        {/* Participant cards area */}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700 flex flex-col">
-          {/* Vote Summary when revealed */}
-          {revealed && (
-            <div className="flex justify-center mb-4">
-              <VoteStats votes={userVotes} options={options} />
-            </div>
-          )}
-          
-          {/* Cards */}
-          <div className="flex flex-wrap justify-center gap-3">
-            {revealed ? (
-              shuffledVotes.map((vote, i) => (
-                <UserCard key={i} userName="" content={vote} isRevealed={true} />
-              ))
-            ) : (
-              userStatusList.map((user, i) => {
-                const hasVoted = user.vote !== null && user.vote !== ''
-                return (
-                  <UserCard
-                    key={i}
-                    ref={(el) => {
-                      if (user.name) cardRefs.current.set(user.name, el)
-                    }}
-                    userName={user.name ?? ''}
-                    content={user.vote}
-                    isRevealed={false}
-                    onClick={!hasVoted && user.name ? () => throwCat(user.name!) : undefined}
-                  />
+              ) : (
+                countdownStartTimestamp !== null &&
+                !revealed && (
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="text-slate-500" size={12} />
+                    <CountdownTimer
+                      durationSeconds={timeLimitSeconds}
+                      startTimestamp={countdownStartTimestamp}
+                      onTimerEnd={handleTimerEnd}
+                    />
+                    <button
+                      className="px-2 py-1 bg-slate-600 text-white rounded hover:bg-slate-500 flex items-center justify-center"
+                      onClick={() => {
+                        setCountdownPaused(true)
+                        setTimeLimitSeconds((prev) => {
+                          const now = Date.now()
+                          const elapsed = now - (countdownStartTimestamp ?? 0)
+                          const remaining = Math.max(0, prev * 1000 - elapsed)
+                          return Math.ceil(remaining / 1000)
+                        })
+                      }}
+                    >
+                      <PauseIcon size={10} />
+                    </button>
+                  </div>
                 )
-              })
-            )}
-            {userStatusList.length === 0 && (
-              <p className="text-slate-500 text-sm">Waiting for participants to join...</p>
-            )}
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <button
+                className="flex-1 bg-indigo-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-indigo-500 transition-colors text-sm"
+                onClick={() => {
+                  lastRevealedRound.current = round
+                  setRevealed(true)
+                  setCountdownStartTimestamp(null)
+                  confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                  })
+                }}
+              >
+                Reveal
+              </button>
+              <button
+                className="flex-1 bg-emerald-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-emerald-500 transition-colors text-sm"
+                onClick={() => {
+                  setRevealed(false)
+                  setRound((prev) => prev + 1)
+                  setCountdownPaused(true)
+                  setTimeLimitSeconds(120)
+                }}
+              >
+                New Round
+              </button>
+            </div>
+
+            {/* Auto-reveal */}
+            <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
+              <input
+                type="checkbox"
+                checked={autoReveal}
+                onChange={(e) => setAutoReveal(e.target.checked)}
+                className="w-3 h-3 text-indigo-600 bg-slate-700 border-slate-500 rounded focus:ring-indigo-500"
+              />
+              Auto-reveal when all voted
+            </label>
           </div>
         </div>
-      </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col gap-3 min-w-0">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Session
+          </h2>
+          {/* Details card */}
+          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+            <label className="block text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">
+              Details
+            </label>
+            <textarea
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows={2}
+              placeholder="Paste ticket link or description..."
+              defaultValue={details}
+              onBlur={(e) => setDetails(e.target.value)}
+            />
+            {details && (
+              <div className="mt-2 text-sm text-slate-300">
+                <LinkifiedText text={details} />
+              </div>
+            )}
+          </div>
+
+          {/* Participant cards area */}
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700 flex flex-col">
+            {/* Vote Summary when revealed */}
+            {revealed && (
+              <div className="flex justify-center mb-4">
+                <VoteStats votes={userVotes} options={options} />
+              </div>
+            )}
+
+            {/* Cards */}
+            <div className="flex flex-wrap justify-center gap-3">
+              {revealed
+                ? shuffledVotes.map((vote, i) => (
+                    <UserCard
+                      key={i}
+                      userName=""
+                      content={vote}
+                      isRevealed={true}
+                    />
+                  ))
+                : userStatusList.map((user, i) => {
+                    const hasVoted = user.vote !== null && user.vote !== ''
+                    return (
+                      <UserCard
+                        key={i}
+                        ref={(el) => {
+                          if (user.name) cardRefs.current.set(user.name, el)
+                        }}
+                        userName={user.name ?? ''}
+                        content={user.vote}
+                        isRevealed={false}
+                        onClick={
+                          !hasVoted && user.name
+                            ? () => throwCat(user.name!)
+                            : undefined
+                        }
+                      />
+                    )
+                  })}
+              {userStatusList.length === 0 && (
+                <p className="text-slate-500 text-sm">
+                  Waiting for participants to join...
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Cat throw animations */}

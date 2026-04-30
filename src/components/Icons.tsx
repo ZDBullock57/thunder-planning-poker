@@ -5,7 +5,10 @@ interface IconProps {
   size?: number
 }
 
-export const ClockIcon: React.FC<IconProps> = ({ className = '', size = 14 }) => (
+export const ClockIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 14,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -23,7 +26,10 @@ export const ClockIcon: React.FC<IconProps> = ({ className = '', size = 14 }) =>
   </svg>
 )
 
-export const PlayIcon: React.FC<IconProps> = ({ className = '', size = 12 }) => (
+export const PlayIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 12,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -37,7 +43,10 @@ export const PlayIcon: React.FC<IconProps> = ({ className = '', size = 12 }) => 
   </svg>
 )
 
-export const PauseIcon: React.FC<IconProps> = ({ className = '', size = 12 }) => (
+export const PauseIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 12,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -52,7 +61,10 @@ export const PauseIcon: React.FC<IconProps> = ({ className = '', size = 12 }) =>
   </svg>
 )
 
-export const CheckIcon: React.FC<IconProps> = ({ className = '', size = 14 }) => (
+export const CheckIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 14,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -69,7 +81,10 @@ export const CheckIcon: React.FC<IconProps> = ({ className = '', size = 14 }) =>
   </svg>
 )
 
-export const CopyIcon: React.FC<IconProps> = ({ className = '', size = 14 }) => (
+export const CopyIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 14,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -87,7 +102,10 @@ export const CopyIcon: React.FC<IconProps> = ({ className = '', size = 14 }) => 
   </svg>
 )
 
-export const SparklesIcon: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const SparklesIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 16,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -106,7 +124,10 @@ export const SparklesIcon: React.FC<IconProps> = ({ className = '', size = 16 })
   </svg>
 )
 
-export const HourglassIcon: React.FC<IconProps> = ({ className = '', size = 20 }) => (
+export const HourglassIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 20,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -151,14 +172,74 @@ export const CatIcon: React.FC<IconProps> = ({ className = '', size = 40 }) => (
     {/* Nose */}
     <ellipse cx="32" cy="42" rx="3" ry="2.5" fill="#ffa0b0" />
     {/* Mouth */}
-    <path d="M32 44.5 Q28 50 24 46" stroke="#2d3748" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <path d="M32 44.5 Q36 50 40 46" stroke="#2d3748" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path
+      d="M32 44.5 Q28 50 24 46"
+      stroke="#2d3748"
+      strokeWidth="1.5"
+      fill="none"
+      strokeLinecap="round"
+    />
+    <path
+      d="M32 44.5 Q36 50 40 46"
+      stroke="#2d3748"
+      strokeWidth="1.5"
+      fill="none"
+      strokeLinecap="round"
+    />
     {/* Whiskers */}
-    <line x1="10" y1="38" x2="18" y2="40" stroke="#2d3748" strokeWidth="1" strokeLinecap="round" />
-    <line x1="10" y1="44" x2="18" y2="44" stroke="#2d3748" strokeWidth="1" strokeLinecap="round" />
-    <line x1="10" y1="50" x2="18" y2="48" stroke="#2d3748" strokeWidth="1" strokeLinecap="round" />
-    <line x1="54" y1="38" x2="46" y2="40" stroke="#2d3748" strokeWidth="1" strokeLinecap="round" />
-    <line x1="54" y1="44" x2="46" y2="44" stroke="#2d3748" strokeWidth="1" strokeLinecap="round" />
-    <line x1="54" y1="50" x2="46" y2="48" stroke="#2d3748" strokeWidth="1" strokeLinecap="round" />
+    <line
+      x1="10"
+      y1="38"
+      x2="18"
+      y2="40"
+      stroke="#2d3748"
+      strokeWidth="1"
+      strokeLinecap="round"
+    />
+    <line
+      x1="10"
+      y1="44"
+      x2="18"
+      y2="44"
+      stroke="#2d3748"
+      strokeWidth="1"
+      strokeLinecap="round"
+    />
+    <line
+      x1="10"
+      y1="50"
+      x2="18"
+      y2="48"
+      stroke="#2d3748"
+      strokeWidth="1"
+      strokeLinecap="round"
+    />
+    <line
+      x1="54"
+      y1="38"
+      x2="46"
+      y2="40"
+      stroke="#2d3748"
+      strokeWidth="1"
+      strokeLinecap="round"
+    />
+    <line
+      x1="54"
+      y1="44"
+      x2="46"
+      y2="44"
+      stroke="#2d3748"
+      strokeWidth="1"
+      strokeLinecap="round"
+    />
+    <line
+      x1="54"
+      y1="50"
+      x2="46"
+      y2="48"
+      stroke="#2d3748"
+      strokeWidth="1"
+      strokeLinecap="round"
+    />
   </svg>
 )

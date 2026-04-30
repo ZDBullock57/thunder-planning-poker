@@ -9,12 +9,15 @@ interface LinkifiedTextProps {
  * Renders text with URLs converted to clickable links.
  * Particularly useful for ClickUp ticket links and other URLs.
  */
-export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, className }) => {
+export const LinkifiedText: React.FC<LinkifiedTextProps> = ({
+  text,
+  className,
+}) => {
   // URL regex pattern that matches http, https, and www links
   const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/g
-  
+
   const parts = text.split(urlPattern)
-  
+
   return (
     <span className={`whitespace-pre-wrap ${className ?? ''}`}>
       {parts.map((part, index) => {

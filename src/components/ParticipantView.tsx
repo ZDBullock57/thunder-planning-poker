@@ -5,7 +5,14 @@ import {
   Transition,
   TransitionChild,
 } from '@headlessui/react'
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { CatThrowEvent, HostData, UserData } from '../types'
 import { useHostConnection, DEBUG_MODE } from '../utils/peerUtils'
 import { UserCard } from './UserCard'
@@ -37,23 +44,26 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
       const event = data.catThrow
       if (!processedCatThrows.current.has(event.id)) {
         processedCatThrows.current.add(event.id)
-        setCatThrowEvents(prev => [...prev, event])
+        setCatThrowEvents((prev) => [...prev, event])
       }
     }
   }, [data?.catThrow])
 
   // Function to throw a cat (participant)
-  const throwCat = useCallback((targetName: string) => {
-    const event: CatThrowEvent = {
-      id: `${name}-${Date.now()}-${Math.random()}`,
-      targetName,
-      fromName: name,
-      timestamp: Date.now(),
-    }
-    processedCatThrows.current.add(event.id)
-    setCatThrowEvents(prev => [...prev, event])
-    sendData({ catThrow: event })
-  }, [name, sendData])
+  const throwCat = useCallback(
+    (targetName: string) => {
+      const event: CatThrowEvent = {
+        id: `${name}-${Date.now()}-${Math.random()}`,
+        targetName,
+        fromName: name,
+        timestamp: Date.now(),
+      }
+      processedCatThrows.current.add(event.id)
+      setCatThrowEvents((prev) => [...prev, event])
+      sendData({ catThrow: event })
+    },
+    [name, sendData]
+  )
 
   // Get ref for a target by name
   const getTargetRef = useCallback((targetName: string) => {
@@ -63,12 +73,12 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
 
   // Remove completed cat throw event
   const handleCatThrowComplete = useCallback((id: string) => {
-    setCatThrowEvents(prev => prev.filter(e => e.id !== id))
+    setCatThrowEvents((prev) => prev.filter((e) => e.id !== id))
   }, [])
 
   useEffect(
     function updateTitle() {
-      window.document.title = data?.sessionName || "Pointing Poker"
+      window.document.title = data?.sessionName || 'Pointing Poker'
     },
     [data?.sessionName]
   )
@@ -127,7 +137,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
       <h1 className="text-3xl font-black text-center py-3 tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex-shrink-0">
         Pointing Poker{data?.sessionName && ` — ${data.sessionName}`}
       </h1>
-      
+
       {!isModalOpen ? (
         <div className="flex-grow overflow-y-auto p-4 space-y-4 pb-36">
           <div className="flex items-center justify-end">
@@ -142,7 +152,8 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
 
           <div className="flex justify-between items-center pb-3 border-b border-slate-700">
             <p className="text-sm font-medium text-slate-300">
-              Round: <span className="font-bold text-white">{data?.round || 1}</span>
+              Round:{' '}
+              <span className="font-bold text-white">{data?.round || 1}</span>
             </p>
 
             <div className="flex justify-center items-center">
@@ -164,8 +175,9 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
 
           <div className="text-center mb-4">
             <p
-              className={`text-lg font-bold transition-colors duration-300 ${vote ? 'text-indigo-400' : 'text-slate-500'
-                }`}
+              className={`text-lg font-bold transition-colors duration-300 ${
+                vote ? 'text-indigo-400' : 'text-slate-500'
+              }`}
             >
               {voteStatus}
             </p>
@@ -179,32 +191,33 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
           )}
 
           <div className="flex flex-wrap justify-center gap-3">
-            {isRevealed ? (
-              // Show shuffled votes after reveal with no names
-              allVotes.map((voteContent, i) => (
-                <UserCard
-                  key={i}
-                  userName=""
-                  content={voteContent}
-                  isRevealed={true}
-                />
-              ))
-            ) : (
-              // Show vote status before reveal
-              data?.hasVoted?.map((voted, i) => {
-                const userName = data?.userNames?.[i] || `Participant ${i + 1}`
-                return (
+            {isRevealed
+              ? // Show shuffled votes after reveal with no names
+                allVotes.map((voteContent, i) => (
                   <UserCard
                     key={i}
-                    ref={(el) => { cardRefs.current.set(userName, el) }}
-                    userName={userName}
-                    content={voted ? 'voted' : null}
-                    isRevealed={false}
-                    onClick={!voted ? () => throwCat(userName) : undefined}
+                    userName=""
+                    content={voteContent}
+                    isRevealed={true}
                   />
-                )
-              })
-            )}
+                ))
+              : // Show vote status before reveal
+                data?.hasVoted?.map((voted, i) => {
+                  const userName =
+                    data?.userNames?.[i] || `Participant ${i + 1}`
+                  return (
+                    <UserCard
+                      key={i}
+                      ref={(el) => {
+                        cardRefs.current.set(userName, el)
+                      }}
+                      userName={userName}
+                      content={voted ? 'voted' : null}
+                      isRevealed={false}
+                      onClick={!voted ? () => throwCat(userName) : undefined}
+                    />
+                  )
+                })}
           </div>
           <div className="flex gap-2 mt-4">
             <button

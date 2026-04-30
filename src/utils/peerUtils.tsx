@@ -19,7 +19,9 @@ export const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true'
 
 // Metered.ca REST API credentials from environment variables.
 // The API key is used to fetch temporary TURN credentials at runtime.
-const METERED_API_KEY = import.meta.env.VITE_METERED_API_KEY as string | undefined
+const METERED_API_KEY = import.meta.env.VITE_METERED_API_KEY as
+  | string
+  | undefined
 const METERED_DOMAIN = import.meta.env.VITE_METERED_DOMAIN as string | undefined
 
 /** Default STUN-only fallback when Metered credentials are unavailable. */
@@ -34,7 +36,9 @@ const FALLBACK_ICE_SERVERS: RTCIceServer[] = [
  */
 const getIceServers = async (): Promise<RTCIceServer[]> => {
   if (!METERED_API_KEY || !METERED_DOMAIN) {
-    console.warn('Metered API key or domain not set — falling back to STUN-only')
+    console.warn(
+      'Metered API key or domain not set — falling back to STUN-only'
+    )
     return FALLBACK_ICE_SERVERS
   }
 
@@ -46,10 +50,17 @@ const getIceServers = async (): Promise<RTCIceServer[]> => {
       throw new Error(`Metered API returned ${response.status}`)
     }
     const iceServers: RTCIceServer[] = await response.json()
-    console.log('Fetched Metered TURN credentials:', iceServers.length, 'servers')
+    console.log(
+      'Fetched Metered TURN credentials:',
+      iceServers.length,
+      'servers'
+    )
     return iceServers
   } catch (error) {
-    console.error('Failed to fetch Metered TURN credentials, falling back to STUN-only:', error)
+    console.error(
+      'Failed to fetch Metered TURN credentials, falling back to STUN-only:',
+      error
+    )
     return FALLBACK_ICE_SERVERS
   }
 }
@@ -79,7 +90,10 @@ const usePeer = (options: PeerOptions = {}) => {
       peerInstance.on('error', console.error)
       peerInstance.on('open', (id) => {
         console.log('Connected to PeerJS server and got ID', id)
-        console.log('ICE servers configured:', peerOptions.config?.iceServers?.length ?? 0)
+        console.log(
+          'ICE servers configured:',
+          peerOptions.config?.iceServers?.length ?? 0
+        )
         setPeer(peerInstance)
       })
     }
@@ -128,7 +142,7 @@ const MOCK_PARTICIPANT_NAMES = ['Alice', 'Bob', 'Charlie', 'Diana']
 // Generate mock votes based on current deck options
 const generateMockParticipants = (options: string[]) => {
   // Pick votes from available options (some participants don't vote)
-  const validOptions = options.filter(o => o !== '?' && o !== '☕')
+  const validOptions = options.filter((o) => o !== '?' && o !== '☕')
   return MOCK_PARTICIPANT_NAMES.map((name, i) => ({
     name,
     // Charlie (index 2) hasn't voted yet, others pick from options
@@ -144,16 +158,13 @@ export const useHostConnection = <T, K>(joinId: string) => {
   const connectionRef = useRef(connection)
   connectionRef.current = connection
 
-  const sendData = useCallback(
-    (data: K) => {
-      if (DEBUG_MODE) {
-        console.log('🔧 Debug mode: Would send to host:', data)
-        return
-      }
-      connectionRef.current?.send(data)
-    },
-    []
-  )
+  const sendData = useCallback((data: K) => {
+    if (DEBUG_MODE) {
+      console.log('🔧 Debug mode: Would send to host:', data)
+      return
+    }
+    connectionRef.current?.send(data)
+  }, [])
 
   useEffect(() => {
     // In debug mode, simulate being connected with mock host data
@@ -163,16 +174,17 @@ export const useHostConnection = <T, K>(joinId: string) => {
       const mockParticipants = generateMockParticipants(mockOptions)
       const mockHostData = {
         sessionName: 'Debug Session',
-        details: 'https://app.clickup.com/t/debug123 - Test ticket for UI development',
+        details:
+          'https://app.clickup.com/t/debug123 - Test ticket for UI development',
         round: 1,
         options: mockOptions,
         timeLimitSeconds: 120,
         countdownStartTimestamp: null,
         countdownPaused: true,
         revealed: false,
-        cards: mockParticipants.map(p => p.vote).filter(Boolean), // Mock revealed cards
-        userNames: mockParticipants.map(p => p.name),
-        hasVoted: mockParticipants.map(p => p.vote !== null),
+        cards: mockParticipants.map((p) => p.vote).filter(Boolean), // Mock revealed cards
+        userNames: mockParticipants.map((p) => p.name),
+        hasVoted: mockParticipants.map((p) => p.vote !== null),
       } as T
       setData(mockHostData)
       return
@@ -205,18 +217,15 @@ export const useClientConnections = <T, K>(options?: string[]) => {
   const connectionDataMapRef = useRef(connectionDataMap)
   connectionDataMapRef.current = connectionDataMap
 
-  const sendData = useCallback(
-    (data: K) => {
-      if (DEBUG_MODE) {
-        console.log('🔧 Debug mode: Would broadcast to clients:', data)
-        return
-      }
-      connectionDataMapRef.current.forEach((_, connection) => {
-        connection.send(data)
-      })
-    },
-    []
-  )
+  const sendData = useCallback((data: K) => {
+    if (DEBUG_MODE) {
+      console.log('🔧 Debug mode: Would broadcast to clients:', data)
+      return
+    }
+    connectionDataMapRef.current.forEach((_, connection) => {
+      connection.send(data)
+    })
+  }, [])
 
   useEffect(() => {
     if (DEBUG_MODE) return
@@ -245,7 +254,17 @@ export const useClientConnections = <T, K>(options?: string[]) => {
   // Generate debug data reactively based on options
   const debugData = useMemo(() => {
     if (!DEBUG_MODE) return []
-    const mockOptions = options || ['0', '1', '2', '3', '5', '8', '13', '21', '?']
+    const mockOptions = options || [
+      '0',
+      '1',
+      '2',
+      '3',
+      '5',
+      '8',
+      '13',
+      '21',
+      '?',
+    ]
     return generateMockParticipants(mockOptions) as T[]
   }, [options])
 
