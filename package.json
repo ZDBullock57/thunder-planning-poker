@@ -1,7 +1,7 @@
 {
   "name": "thunder-planning-poker",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "start": "vite",
@@ -10,6 +10,7 @@
     "start:debug:participant": "VITE_DEBUG_MODE=true VITE_DEBUG_ROLE=participant vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format": "oxfmt --disable-nested-config",
     "preview": "vite preview",
     "serve": "peerjs --port 9000 --key peerjs"
   },
@@ -40,12 +41,5 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.3",
     "vite": "^7.2.2"
-  },
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "semi": false,
-    "singleQuote": true,
-    "bracketSpacing": true
   }
 }
