@@ -18,17 +18,17 @@ const SLICE_COLORS = [
   '#3b82f6', // blue-500
 ]
 
+const size = 120
+const center = size / 2
+const radius = 45
+const innerRadius = 25 // For donut effect
+
 interface PieChartProps {
   data: [string, number][]
   total: number
 }
 
 const PieChart = ({ data, total }: PieChartProps) => {
-  const size = 120
-  const center = size / 2
-  const radius = 45
-  const innerRadius = 25 // For donut effect
-
   const slices = useMemo(() => {
     let currentAngle = -90 // Start from top
 

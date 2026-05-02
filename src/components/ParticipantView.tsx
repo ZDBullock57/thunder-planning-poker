@@ -14,7 +14,6 @@ import {
   useState,
 } from 'react'
 import type { CatThrowEvent, HostData, UserData } from '../types'
-import { useHostConnection, DEBUG_MODE } from '../utils/peerUtils'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { CountdownTimer } from './CountdownTimer'
@@ -22,6 +21,8 @@ import { CardSelector } from './CardSelector'
 import { LinkifiedText } from './LinkifiedText'
 import { VoteStats } from './VoteStats'
 import { CatThrowManager } from './CatThrow'
+import { useHostConnection } from '../hooks/peerHooks'
+import { DEBUG_MODE } from '../constants'
 
 export const ParticipantView = ({ joinId }: { joinId: string }) => {
   const [name, setName] = useStorage('name', '')
@@ -83,10 +84,13 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
     [data?.sessionName]
   )
 
-  const chooseCard = (value: string) => {
-    setVote(value)
-    sendData({ vote: value || null })
-  }
+  const chooseCard = useCallback(
+    (value: string) => {
+      setVote(value)
+      sendData({ vote: value || null })
+    },
+    [sendData]
+  )
 
   useEffect(
     function resetVoteOnNewRound() {
@@ -94,7 +98,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
         chooseCard('')
       }
     },
-    [data?.round]
+    [data?.round, chooseCard]
   )
   useEffect(
     function resetVoteIfNotInOptions() {
@@ -102,7 +106,7 @@ export const ParticipantView = ({ joinId }: { joinId: string }) => {
         chooseCard('')
       }
     },
-    [data?.options]
+    [data?.options, chooseCard, vote]
   )
 
   const isRevealed = data?.revealed === true || (DEBUG_MODE && debugRevealed)

@@ -1,7 +1,7 @@
 import '../index.css'
 import { HostView } from './components/HostView'
 import { ParticipantView } from './components/ParticipantView'
-import { PeerProvider } from './utils/peerUtils'
+import { PeerProvider } from './components/PeerProvider'
 
 // Debug mode configuration
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true'

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
 import type { CatThrowEvent, HostData, UserData } from '../types'
-import { useClientConnections, usePeerId } from '../utils/peerUtils'
 import { UserCard } from './UserCard'
 import { useStorage } from '../utils/storage'
 import { CountdownTimer } from './CountdownTimer'
@@ -10,6 +9,7 @@ import { VoteStats } from './VoteStats'
 import { LinkifiedText } from './LinkifiedText'
 import { ClockIcon, PlayIcon, PauseIcon, CheckIcon, CopyIcon } from './Icons'
 import { CatThrowManager } from './CatThrow'
+import { useClientConnections, usePeerId } from '../hooks/peerHooks'
 
 export const HostView = () => {
   const [sessionName, setSessionName] = useState('')
