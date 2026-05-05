@@ -14,7 +14,7 @@ export const AllCards = ({
   chooseCard,
 }: {
   options: string[]
-  chooseCard: Function
+  chooseCard: (value: string) => void
 }) => {
   return (
     <div className="grid grid-cols-4 gap-4 p-4">

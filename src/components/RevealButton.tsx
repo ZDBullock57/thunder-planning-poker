@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 type RevealButtonProps = {
-  onReveal?: () => void;
-  label?: string;
-};
+  onReveal?: () => void
+  label?: string
+}
 
 export const RevealButton: React.FC<RevealButtonProps> = ({
   onReveal,
   label = 'Reveal Cards',
 }) => {
-  const [isClicked, setIsClicked] = useState(false);
+  const [isClicked, setIsClicked] = useState(false)
 
   const handleClick = () => {
-    setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 300); // Reset after 300ms
-    onReveal?.();
-  };
+    setIsClicked(true)
+    setTimeout(() => setIsClicked(false), 300) // Reset after 300ms
+    onReveal?.()
+  }
 
   return (
     <button
@@ -27,5 +27,5 @@ export const RevealButton: React.FC<RevealButtonProps> = ({
     >
       <span>{label}</span>
     </button>
-  );
-};
+  )
+}
